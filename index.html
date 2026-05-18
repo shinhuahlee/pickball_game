@@ -1235,7 +1235,11 @@
       const el = document.getElementById('leaderboard')
       const onCourtIds = new Set(courts.flatMap(c => [...c.teamA, ...c.teamB].map(p => p.id)))
       const ranked = [...players].filter(p => p.matchCount > 0)
-        .sort((a, b) => b.wins - a.wins || a.losses - b.losses || b.matchCount - a.matchCount)
+        .sort((a, b) => {
+          const rateA = a.wins / a.matchCount
+          const rateB = b.wins / b.matchCount
+          return rateB - rateA || b.wins - a.wins || b.matchCount - a.matchCount
+        })
       if (!ranked.length) { el.innerHTML = '<div class="empty">尚無積分紀錄</div>'; return }
       const sym = i => i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1)
       const rcls = i => i === 0 ? 'lbr g1' : i === 1 ? 'lbr g2' : i === 2 ? 'lbr g3' : 'lbr'
