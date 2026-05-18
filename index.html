@@ -657,23 +657,6 @@
       font-weight: 700
     }
 
-    .lbbar {
-      position: relative;
-      height: 5px;
-      border-radius: 10px;
-      background: #eee;
-      overflow: hidden
-    }
-
-    .lbbar-fill {
-      position: absolute;
-      left: 0;
-      top: 0;
-      height: 100%;
-      border-radius: 10px;
-      transition: width .4s
-    }
-
     .hist-list {
       display: flex;
       flex-direction: column;
@@ -745,11 +728,6 @@
       margin-left: auto
     }
 
-    .lbbar,
-    .lbbar-hd {
-      display: none
-    }
-
     @media(min-width:580px) {
       .reg-row {
         flex-direction: row
@@ -769,12 +747,7 @@
 
       .lb-hd,
       .lb-row {
-        grid-template-columns: 30px 1fr 50px 50px 52px 56px 80px
-      }
-
-      .lbbar,
-      .lbbar-hd {
-        display: block
+        grid-template-columns: 30px 1fr 50px 50px 52px 56px
       }
     }
 
@@ -1250,7 +1223,6 @@
     <span style="text-align:center">敗</span>
     <span style="text-align:center">場數</span>
     <span style="text-align:center">勝率</span>
-    <span class="lbbar-hd">勝率條</span>
   </div>`+ ranked.map((p, i) => {
         const rate = p.matchCount > 0 ? Math.round(p.wins / p.matchCount * 100) : 0
         const barColor = rate >= 50 ? 'var(--green)' : 'var(--red)'
@@ -1262,7 +1234,6 @@
       <span class="lbl">${p.losses}</span>
       <span class="lbt">${p.matchCount}</span>
       <span class="lbwr" style="color:${barColor}">${rate}%</span>
-      <div class="lbbar"><div class="lbbar-fill" style="width:${rate}%;background:${barColor}"></div></div>
     </div>`
       }).join('')
     }
