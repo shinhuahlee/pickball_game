@@ -1,517 +1,1269 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>匹克球報隊系統</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --green:#2a7a38;--green-l:#e7f5ea;--green-m:#5cb56a;
-  --yellow:#d4900a;--yellow-l:#fef6e0;
-  --blue:#1a5c8a;--blue-l:#e3f0fa;
-  --red:#b83228;--red-l:#fdecea;
-  --gold:#b8860b;--gold-l:#fef3cc;
-  --bg:#f1f6f2;--card:#fff;--text:#1a2a1c;--muted:#7a8f7c;
-  --border:#d0e6d3;--r:13px;
-}
-body{font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>匹克球報隊系統</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap"
+    rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
 
-header{background:var(--green);padding:.85rem 1.4rem;display:flex;align-items:center;gap:12px;box-shadow:0 2px 10px rgba(0,0,0,.18)}
-.logo{font-family:'Nunito',sans-serif;font-weight:900;font-size:1.3rem;color:#fff;letter-spacing:-.02em}
-.logo em{color:#fdd94a;font-style:normal}
-.logo-sub{font-size:.68rem;color:rgba(255,255,255,.55);letter-spacing:.07em;margin-top:1px}
-.hdr-right{margin-left:auto;display:flex;align-items:center;gap:10px}
-.court-box{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.13);border-radius:9px;padding:5px 13px}
-.court-box label{font-size:.78rem;color:rgba(255,255,255,.8)}
-.court-box input{width:48px;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.35);border-radius:6px;color:#fff;font-size:.93rem;font-weight:700;text-align:center;padding:3px;outline:none;font-family:inherit}
-.hdr-print{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:5px 12px;font-size:.78rem;cursor:pointer;font-family:inherit}
+    :root {
+      --green: #2a7a38;
+      --green-l: #e7f5ea;
+      --green-m: #5cb56a;
+      --yellow: #d4900a;
+      --yellow-l: #fef6e0;
+      --blue: #1a5c8a;
+      --blue-l: #e3f0fa;
+      --red: #b83228;
+      --red-l: #fdecea;
+      --gold: #b8860b;
+      --gold-l: #fef3cc;
+      --bg: #f1f6f2;
+      --card: #fff;
+      --text: #1a2a1c;
+      --muted: #7a8f7c;
+      --border: #d0e6d3;
+      --r: 13px;
+    }
 
-.wrap{max-width:1020px;margin:0 auto;padding:1.1rem .9rem;display:flex;flex-direction:column;gap:1.1rem}
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh
+    }
 
-.card{background:var(--card);border-radius:var(--r);border:1px solid var(--border)}
-.ch{padding:.65rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
-.ct{font-weight:700;font-size:.92rem}
-.pill{font-size:.66rem;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--green-l);color:var(--green);border:1px solid #aad6b4}
-.cb{padding:.95rem 1rem}
+    header {
+      background: var(--green);
+      padding: .85rem 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, .18)
+    }
 
-.reg-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:9px}
-.ni{flex:1;min-width:130px;border:1.5px solid var(--border);border-radius:9px;padding:.48rem .85rem;font-size:.92rem;font-family:inherit;color:var(--text);background:#fafefc;outline:none;transition:border-color .2s}
-.ni:focus{border-color:var(--green-m)}
-.add-btn{background:var(--green);color:#fff;border:none;border-radius:9px;padding:.48rem 1.1rem;font-size:.88rem;font-family:inherit;font-weight:700;cursor:pointer;transition:all .15s}
-.add-btn:hover{background:#1f5e2a;transform:translateY(-1px)}
+    .logo {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 900;
+      font-size: 1.3rem;
+      color: #fff;
+      letter-spacing: -.02em
+    }
 
-.chips{display:flex;flex-wrap:wrap;gap:6px;min-height:36px}
-.chip{display:flex;align-items:center;gap:5px;border-radius:30px;padding:4px 10px 4px 7px;font-size:.82rem;font-weight:600}
-.chip-wait{background:var(--green-l);border:1px solid #aad6b4;color:var(--green)}
-.chip-court{background:#e8edf5;border:1px solid #b8c8dc;color:#4a6880;opacity:.72}
-.chip-preview{background:var(--yellow-l);border:1px solid #e8c870;color:#8a6010}
-.chip-rk{font-size:.62rem;color:#fff;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
-.chip-del{background:none;border:none;color:#90ba98;cursor:pointer;font-size:.82rem;padding:0 0 0 1px;line-height:1}
-.chip-del:hover{color:var(--red)}
-.chip-tag{font-size:.6rem;border-radius:4px;padding:1px 5px;margin-left:1px}
-.tag-court{background:#dce8f5;color:var(--blue)}
-.tag-prev{background:#fdeec0;color:#8a6010}
+    .logo em {
+      color: #fdd94a;
+      font-style: normal
+    }
 
-.act-row{display:flex;gap:9px;flex-wrap:wrap}
-.btn-shuffle{flex:1;min-width:145px;background:var(--yellow);color:#fff;border:none;border-radius:11px;padding:.72rem .9rem;font-size:.92rem;font-family:inherit;font-weight:900;cursor:pointer;transition:all .15s}
-.btn-shuffle:hover{background:#b07808;transform:translateY(-2px)}
-.btn-shuffle:disabled{opacity:.35;cursor:not-allowed;transform:none}
-.btn-release{flex:1;min-width:145px;background:var(--blue);color:#fff;border:none;border-radius:11px;padding:.72rem .9rem;font-size:.92rem;font-family:inherit;font-weight:900;cursor:pointer;transition:all .15s}
-.btn-release:hover{background:#12406a;transform:translateY(-2px)}
-.btn-release:disabled{opacity:.35;cursor:not-allowed;transform:none}
+    .logo-sub {
+      font-size: .68rem;
+      color: rgba(255, 255, 255, .55);
+      letter-spacing: .07em;
+      margin-top: 1px
+    }
 
-.prev-list{display:flex;flex-direction:column;gap:7px}
-.prev-match{background:var(--yellow-l);border:1px solid #e8c870;border-radius:9px;padding:.58rem .95rem;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
-.prev-court-lbl{font-size:.68rem;font-weight:700;color:var(--yellow);background:#fff;border:1px solid #e8c870;border-radius:5px;padding:2px 7px;white-space:nowrap}
-.prev-team{display:flex;gap:5px}
-.prev-nm{background:#fff;border:1px solid #ddd;border-radius:6px;padding:2px 9px;font-size:.82rem;font-weight:600}
-.prev-vs{font-size:.7rem;color:var(--muted);font-weight:700}
-.prev-score{font-size:.68rem;color:var(--muted);margin-left:auto;background:#fff;border:1px solid #e8e8e8;border-radius:5px;padding:1px 7px}
-.prev-left{font-size:.78rem;color:var(--muted);padding:.38rem .7rem;background:#f4f4f4;border-radius:7px;border:1px solid #e0e0e0}
+    .hdr-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
 
-.courts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:9px}
-.cc{background:var(--blue-l);border:1.5px solid #9ec8ea;border-radius:11px;overflow:hidden}
-.cc-head{background:var(--blue);padding:.48rem .85rem;display:flex;justify-content:space-between;align-items:center}
-.cc-title{color:#fff;font-weight:700;font-size:.86rem}
-.cc-time{color:rgba(255,255,255,.65);font-size:.68rem}
-.cc-teams{padding:.65rem .85rem;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-.team-col{display:flex;flex-direction:column;gap:3px;flex:1}
-.team-pl{background:#fff;border:1px solid #b8d8f0;border-radius:6px;padding:3px 9px;font-size:.82rem;font-weight:600;text-align:center}
-.vs-div{font-size:.7rem;font-weight:900;color:var(--blue);opacity:.4}
-.cc-acts{padding:.42rem .85rem;border-top:1px solid #b8d8f0;display:flex;gap:5px}
-.btn-wa,.btn-wb{flex:1;border:none;border-radius:6px;padding:.38rem .35rem;font-size:.73rem;font-family:inherit;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.btn-wa{background:var(--green-l);color:var(--green);border:1px solid #aad6b4}
-.btn-wa:hover{background:var(--green);color:#fff}
-.btn-wb{background:var(--red-l);color:var(--red);border:1px solid #e0aaa8}
-.btn-wb:hover{background:var(--red);color:#fff}
-.btn-no{border:1px solid #ddd;border-radius:6px;padding:.38rem .65rem;font-size:.7rem;font-family:inherit;cursor:pointer;background:#f7f7f7;color:var(--muted)}
-.btn-no:hover{background:#eee}
+    .court-box {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(255, 255, 255, .13);
+      border-radius: 9px;
+      padding: 5px 13px
+    }
 
-.lb{display:flex;flex-direction:column;gap:4px}
-.lb-hd{display:grid;grid-template-columns:30px 1fr 50px 50px 52px 56px 80px;gap:5px;padding:4px 9px;font-size:.68rem;font-weight:700;color:var(--muted);border-bottom:1px solid var(--border)}
-.lb-row{display:grid;grid-template-columns:30px 1fr 50px 50px 52px 56px 80px;gap:5px;align-items:center;padding:6px 9px;border-radius:8px;font-size:.83rem;transition:background .15s}
-.lb-row:hover{background:#f3fbf4}
-.lbr{font-weight:700;font-size:.77rem;text-align:center;color:var(--muted)}
-.lbr.g1{color:#b8860b;font-size:.9rem}
-.lbr.g2{color:#888;font-size:.9rem}
-.lbr.g3{color:#9a6030;font-size:.9rem}
-.lbn{font-weight:600;display:flex;align-items:center;gap:4px}
-.lbn .oc{font-size:.58rem;color:var(--blue);background:var(--blue-l);border-radius:3px;padding:1px 4px}
-.lbw{color:var(--green);font-weight:700;text-align:center}
-.lbl{color:var(--red);font-weight:700;text-align:center}
-.lbt{color:var(--muted);text-align:center;font-size:.8rem}
-.lbwr{text-align:center;font-size:.8rem;font-weight:700}
-.lbbar{position:relative;height:5px;border-radius:10px;background:#eee;overflow:hidden}
-.lbbar-fill{position:absolute;left:0;top:0;height:100%;border-radius:10px;transition:width .4s}
+    .court-box label {
+      font-size: .78rem;
+      color: rgba(255, 255, 255, .8)
+    }
 
-.hist-list{display:flex;flex-direction:column;gap:5px;max-height:320px;overflow-y:auto}
-.hi{background:#fafafa;border:1px solid #e8e8e8;border-radius:8px;padding:.52rem .88rem;font-size:.82rem}
-.hi-head{display:flex;justify-content:space-between;margin-bottom:4px}
-.hi-court{font-weight:700;color:var(--blue)}
-.hi-time{color:var(--muted);font-size:.68rem}
-.hi-match{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.hi-team{display:flex;gap:4px}
-.hi-nm{background:#fff;border:1px solid #ddd;border-radius:4px;padding:2px 7px;font-weight:500}
-.hi-win{background:var(--green-l);border-color:#aad6b4;color:var(--green);font-weight:700}
-.hi-vs{color:var(--muted);font-size:.68rem;font-weight:700}
-.hi-res{font-size:.68rem;color:var(--muted);margin-left:auto}
+    .court-box input {
+      width: 48px;
+      background: rgba(255, 255, 255, .22);
+      border: 1px solid rgba(255, 255, 255, .35);
+      border-radius: 6px;
+      color: #fff;
+      font-size: .93rem;
+      font-weight: 700;
+      text-align: center;
+      padding: 3px;
+      outline: none;
+      font-family: inherit
+    }
 
-@media print{
-  header .hdr-right,.act-row,.chip-del,#preview-card,.cc-acts{display:none!important}
-  body{background:#fff}.card{border:1px solid #ccc}
-  .hist-list{max-height:none}
-}
-.notif{position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%) translateY(80px);background:#1a2a1c;color:#fff;padding:.58rem 1.15rem;border-radius:9px;font-size:.85rem;font-weight:600;z-index:999;transition:transform .28s;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.28)}
-.notif.show{transform:translateX(-50%) translateY(0)}
-.empty{color:var(--muted);font-size:.83rem;text-align:center;padding:1.3rem}
-</style>
+    .hdr-print {
+      background: rgba(255, 255, 255, .15);
+      border: 1px solid rgba(255, 255, 255, .3);
+      color: #fff;
+      border-radius: 8px;
+      padding: 5px 12px;
+      font-size: .78rem;
+      cursor: pointer;
+      font-family: inherit
+    }
+
+    .wrap {
+      max-width: 1020px;
+      margin: 0 auto;
+      padding: 1.1rem .9rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--r);
+      border: 1px solid var(--border)
+    }
+
+    .ch {
+      padding: .65rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .ct {
+      font-weight: 700;
+      font-size: .92rem
+    }
+
+    .pill {
+      font-size: .66rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      background: var(--green-l);
+      color: var(--green);
+      border: 1px solid #aad6b4
+    }
+
+    .cb {
+      padding: .95rem 1rem
+    }
+
+    .reg-row {
+      display: flex;
+      gap: 8px;
+      flex-direction: column;
+      margin-bottom: 9px
+    }
+
+    .ni {
+      flex: 1;
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      padding: .65rem .9rem;
+      font-size: 1rem;
+      font-family: inherit;
+      color: var(--text);
+      background: #fafefc;
+      outline: none;
+      transition: border-color .2s
+    }
+
+    .ni:focus {
+      border-color: var(--green-m)
+    }
+
+    .add-btn {
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 9px;
+      padding: .65rem 1.1rem;
+      font-size: .95rem;
+      font-family: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .15s;
+      width: 100%
+    }
+
+    .add-btn:hover {
+      background: #1f5e2a;
+      transform: translateY(-1px)
+    }
+
+    .csv-btn {
+      background: var(--blue-l);
+      color: var(--blue);
+      border: 1.5px solid #9ec8ea;
+      border-radius: 9px;
+      padding: .52rem .9rem;
+      font-size: .88rem;
+      font-family: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .15s;
+      width: 100%;
+      text-align: center
+    }
+
+    .csv-btn:hover {
+      background: var(--blue);
+      color: #fff
+    }
+
+    .csv-hint {
+      font-size: .72rem;
+      color: var(--muted);
+      margin-top: 5px;
+      padding: 0 2px
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-height: 36px
+    }
+
+    .chip {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      border-radius: 30px;
+      padding: 4px 10px 4px 7px;
+      font-size: .82rem;
+      font-weight: 600
+    }
+
+    .chip-wait {
+      background: var(--green-l);
+      border: 1px solid #aad6b4;
+      color: var(--green)
+    }
+
+    .chip-court {
+      background: #e8edf5;
+      border: 1px solid #b8c8dc;
+      color: #4a6880;
+      opacity: .72
+    }
+
+    .chip-preview {
+      background: var(--yellow-l);
+      border: 1px solid #e8c870;
+      color: #8a6010
+    }
+
+    .chip-rk {
+      font-size: .62rem;
+      color: #fff;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      flex-shrink: 0
+    }
+
+    .chip-del {
+      background: none;
+      border: none;
+      color: #90ba98;
+      cursor: pointer;
+      font-size: .82rem;
+      padding: 0 0 0 1px;
+      line-height: 1
+    }
+
+    .chip-del:hover {
+      color: var(--red)
+    }
+
+    .chip-tag {
+      font-size: .6rem;
+      border-radius: 4px;
+      padding: 1px 5px;
+      margin-left: 1px
+    }
+
+    .tag-court {
+      background: #dce8f5;
+      color: var(--blue)
+    }
+
+    .tag-prev {
+      background: #fdeec0;
+      color: #8a6010
+    }
+
+    .act-row {
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap
+    }
+
+    .btn-shuffle {
+      flex: 1;
+      min-width: 145px;
+      background: var(--yellow);
+      color: #fff;
+      border: none;
+      border-radius: 11px;
+      padding: .72rem .9rem;
+      font-size: .92rem;
+      font-family: inherit;
+      font-weight: 900;
+      cursor: pointer;
+      transition: all .15s
+    }
+
+    .btn-shuffle:hover {
+      background: #b07808;
+      transform: translateY(-2px)
+    }
+
+    .btn-shuffle:disabled {
+      opacity: .35;
+      cursor: not-allowed;
+      transform: none
+    }
+
+    .btn-release {
+      flex: 1;
+      min-width: 145px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 11px;
+      padding: .72rem .9rem;
+      font-size: .92rem;
+      font-family: inherit;
+      font-weight: 900;
+      cursor: pointer;
+      transition: all .15s
+    }
+
+    .btn-release:hover {
+      background: #12406a;
+      transform: translateY(-2px)
+    }
+
+    .btn-release:disabled {
+      opacity: .35;
+      cursor: not-allowed;
+      transform: none
+    }
+
+    .prev-list {
+      display: flex;
+      flex-direction: column;
+      gap: 7px
+    }
+
+    .prev-match {
+      background: var(--yellow-l);
+      border: 1px solid #e8c870;
+      border-radius: 9px;
+      padding: .58rem .95rem;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      flex-wrap: wrap
+    }
+
+    .prev-court-lbl {
+      font-size: .68rem;
+      font-weight: 700;
+      color: var(--yellow);
+      background: #fff;
+      border: 1px solid #e8c870;
+      border-radius: 5px;
+      padding: 2px 7px;
+      white-space: nowrap
+    }
+
+    .prev-team {
+      display: flex;
+      gap: 5px
+    }
+
+    .prev-nm {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 2px 9px;
+      font-size: .82rem;
+      font-weight: 600
+    }
+
+    .prev-vs {
+      font-size: .7rem;
+      color: var(--muted);
+      font-weight: 700
+    }
+
+    .prev-score {
+      font-size: .68rem;
+      color: var(--muted);
+      margin-left: auto;
+      background: #fff;
+      border: 1px solid #e8e8e8;
+      border-radius: 5px;
+      padding: 1px 7px
+    }
+
+    .prev-left {
+      font-size: .78rem;
+      color: var(--muted);
+      padding: .38rem .7rem;
+      background: #f4f4f4;
+      border-radius: 7px;
+      border: 1px solid #e0e0e0
+    }
+
+    .courts-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 9px
+    }
+
+    .cc {
+      background: var(--blue-l);
+      border: 1.5px solid #9ec8ea;
+      border-radius: 11px;
+      overflow: hidden
+    }
+
+    .cc-head {
+      background: var(--blue);
+      padding: .48rem .85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center
+    }
+
+    .cc-title {
+      color: #fff;
+      font-weight: 700;
+      font-size: .86rem
+    }
+
+    .cc-time {
+      color: rgba(255, 255, 255, .65);
+      font-size: .68rem
+    }
+
+    .cc-teams {
+      padding: .65rem .85rem;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: wrap
+    }
+
+    .team-col {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      flex: 1
+    }
+
+    .team-pl {
+      background: #fff;
+      border: 1px solid #b8d8f0;
+      border-radius: 6px;
+      padding: 3px 9px;
+      font-size: .82rem;
+      font-weight: 600;
+      text-align: center
+    }
+
+    .vs-div {
+      font-size: .7rem;
+      font-weight: 900;
+      color: var(--blue);
+      opacity: .4
+    }
+
+    .cc-acts {
+      padding: .42rem .85rem;
+      border-top: 1px solid #b8d8f0;
+      display: flex;
+      gap: 5px
+    }
+
+    .btn-wa,
+    .btn-wb {
+      flex: 1;
+      border: none;
+      border-radius: 6px;
+      padding: .38rem .35rem;
+      font-size: .73rem;
+      font-family: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .btn-wa {
+      background: var(--green-l);
+      color: var(--green);
+      border: 1px solid #aad6b4
+    }
+
+    .btn-wa:hover {
+      background: var(--green);
+      color: #fff
+    }
+
+    .btn-wb {
+      background: var(--red-l);
+      color: var(--red);
+      border: 1px solid #e0aaa8
+    }
+
+    .btn-wb:hover {
+      background: var(--red);
+      color: #fff
+    }
+
+    .btn-no {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: .38rem .65rem;
+      font-size: .7rem;
+      font-family: inherit;
+      cursor: pointer;
+      background: #f7f7f7;
+      color: var(--muted)
+    }
+
+    .btn-no:hover {
+      background: #eee
+    }
+
+    .lb {
+      display: flex;
+      flex-direction: column;
+      gap: 4px
+    }
+
+    .lb-hd {
+      display: grid;
+      grid-template-columns: 26px 1fr 38px 38px 44px 50px;
+      gap: 4px;
+      padding: 4px 9px;
+      font-size: .68rem;
+      font-weight: 700;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border)
+    }
+
+    .lb-row {
+      display: grid;
+      grid-template-columns: 26px 1fr 38px 38px 44px 50px;
+      gap: 4px;
+      align-items: center;
+      padding: 6px 9px;
+      border-radius: 8px;
+      font-size: .83rem;
+      transition: background .15s
+    }
+
+    .lb-row:hover {
+      background: #f3fbf4
+    }
+
+    .lbr {
+      font-weight: 700;
+      font-size: .77rem;
+      text-align: center;
+      color: var(--muted)
+    }
+
+    .lbr.g1 {
+      color: #b8860b;
+      font-size: .9rem
+    }
+
+    .lbr.g2 {
+      color: #888;
+      font-size: .9rem
+    }
+
+    .lbr.g3 {
+      color: #9a6030;
+      font-size: .9rem
+    }
+
+    .lbn {
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px
+    }
+
+    .lbn .oc {
+      font-size: .58rem;
+      color: var(--blue);
+      background: var(--blue-l);
+      border-radius: 3px;
+      padding: 1px 4px
+    }
+
+    .lbw {
+      color: var(--green);
+      font-weight: 700;
+      text-align: center
+    }
+
+    .lbl {
+      color: var(--red);
+      font-weight: 700;
+      text-align: center
+    }
+
+    .lbt {
+      color: var(--muted);
+      text-align: center;
+      font-size: .8rem
+    }
+
+    .lbwr {
+      text-align: center;
+      font-size: .8rem;
+      font-weight: 700
+    }
+
+    .lbbar {
+      position: relative;
+      height: 5px;
+      border-radius: 10px;
+      background: #eee;
+      overflow: hidden
+    }
+
+    .lbbar-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      border-radius: 10px;
+      transition: width .4s
+    }
+
+    .hist-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      max-height: 320px;
+      overflow-y: auto
+    }
+
+    .hi {
+      background: #fafafa;
+      border: 1px solid #e8e8e8;
+      border-radius: 8px;
+      padding: .52rem .88rem;
+      font-size: .82rem
+    }
+
+    .hi-head {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px
+    }
+
+    .hi-court {
+      font-weight: 700;
+      color: var(--blue)
+    }
+
+    .hi-time {
+      color: var(--muted);
+      font-size: .68rem
+    }
+
+    .hi-match {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap
+    }
+
+    .hi-team {
+      display: flex;
+      gap: 4px
+    }
+
+    .hi-nm {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 2px 7px;
+      font-weight: 500
+    }
+
+    .hi-win {
+      background: var(--green-l);
+      border-color: #aad6b4;
+      color: var(--green);
+      font-weight: 700
+    }
+
+    .hi-vs {
+      color: var(--muted);
+      font-size: .68rem;
+      font-weight: 700
+    }
+
+    .hi-res {
+      font-size: .68rem;
+      color: var(--muted);
+      margin-left: auto
+    }
+
+    .lbbar,
+    .lbbar-hd {
+      display: none
+    }
+
+    @media(min-width:580px) {
+      .reg-row {
+        flex-direction: row
+      }
+
+      .ni {
+        min-width: 130px
+      }
+
+      .add-btn {
+        width: auto
+      }
+
+      .courts-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr))
+      }
+
+      .lb-hd,
+      .lb-row {
+        grid-template-columns: 30px 1fr 50px 50px 52px 56px 80px
+      }
+
+      .lbbar,
+      .lbbar-hd {
+        display: block
+      }
+    }
+
+    @media print {
+
+      header .hdr-right,
+      .act-row,
+      .chip-del,
+      #preview-card,
+      .cc-acts {
+        display: none !important
+      }
+
+      body {
+        background: #fff
+      }
+
+      .card {
+        border: 1px solid #ccc
+      }
+
+      .hist-list {
+        max-height: none
+      }
+    }
+
+    .notif {
+      position: fixed;
+      bottom: 1.4rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1a2a1c;
+      color: #fff;
+      padding: .58rem 1.15rem;
+      border-radius: 9px;
+      font-size: .85rem;
+      font-weight: 600;
+      z-index: 999;
+      transition: transform .28s;
+      white-space: nowrap;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, .28)
+    }
+
+    .notif.show {
+      transform: translateX(-50%) translateY(0)
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: .83rem;
+      text-align: center;
+      padding: 1.3rem
+    }
+  </style>
 </head>
+
 <body>
 
-<header>
-  <div>
-    <div class="logo">🥒 Pickle<em>Ball</em></div>
-    <div class="logo-sub">報隊配對系統</div>
-  </div>
-  <div class="hdr-right">
-    <div class="court-box">
-      <label>場地數</label>
-      <input type="number" id="court-count" min="1" max="10" value="2">
-      <label style="color:rgba(255,255,255,.75)">場（≤10）</label>
+  <header>
+    <div>
+      <div class="logo">🥒 Pickle<em>Ball</em></div>
+      <div class="logo-sub">報隊配對系統</div>
     </div>
-    <button class="hdr-print" onclick="window.print()">🖨 列印</button>
-  </div>
-</header>
-
-<div class="wrap">
-
-  <!-- Register -->
-  <div class="card">
-    <div class="ch">
-      <span class="ct">📝 報名入場</span>
-      <span class="pill" id="pill-total">0 人</span>
-      <span class="pill" id="pill-wait">等待 0</span>
-    </div>
-    <div class="cb">
-      <div class="reg-row">
-        <input class="ni" id="name-input" placeholder="輸入姓名後按 Enter 或點加入" maxlength="12" autocomplete="off"/>
-        <button class="add-btn" onclick="addPlayer()">＋ 加入</button>
+    <div class="hdr-right">
+      <div class="court-box">
+        <label>場地數</label>
+        <input type="number" id="court-count" min="1" max="10" value="2">
+        <label style="color:rgba(255,255,255,.75)">場（≤10）</label>
       </div>
-      <div class="chips" id="chip-list"><span style="color:var(--muted);font-size:.82rem">尚無人報名</span></div>
+      <button class="hdr-print" onclick="window.print()">🖨 列印</button>
     </div>
+  </header>
+
+  <div class="wrap">
+
+    <!-- Register -->
+    <div class="card">
+      <div class="ch">
+        <span class="ct">📝 報名入場</span>
+        <span class="pill" id="pill-total">0 人</span>
+        <span class="pill" id="pill-wait">等待 0</span>
+      </div>
+      <div class="cb">
+        <div class="reg-row">
+          <input class="ni" id="name-input" placeholder="輸入姓名，多人用逗號分隔：小明,小華,阿美" maxlength="100" autocomplete="off" />
+          <button class="add-btn" onclick="addPlayer()">＋ 手動加入</button>
+        </div>
+        <div style="margin-bottom:9px">
+          <button class="csv-btn" onclick="loadCSV()">📋 從 players.csv 載入名單</button>
+          <p class="csv-hint">📌 將 players.csv 上傳到 GitHub 同一層目錄，每行一個姓名</p>
+        </div>
+        <div class="chips" id="chip-list"><span style="color:var(--muted);font-size:.82rem">尚無人報名</span></div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="act-row">
+      <button class="btn-shuffle" id="btn-shuffle" onclick="doShuffle()" disabled>🔀 打亂預覽配對</button>
+      <button class="btn-release" id="btn-release" onclick="doRelease()" disabled>▶ 釋出上場</button>
+    </div>
+
+    <!-- Preview -->
+    <div class="card" id="preview-card" style="display:none">
+      <div class="ch">
+        <span class="ct">🎯 預覽配對</span>
+        <span style="font-size:.76rem;color:var(--muted)">確認後按「釋出上場」</span>
+      </div>
+      <div class="cb">
+        <div class="prev-list" id="prev-list"></div>
+      </div>
+    </div>
+
+    <!-- Courts -->
+    <div class="card">
+      <div class="ch">
+        <span class="ct">🏟 上場中</span>
+        <span class="pill" id="pill-courts">0 場</span>
+      </div>
+      <div class="cb">
+        <div class="courts-grid" id="courts-grid">
+          <div class="empty">目前無上場隊伍</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leaderboard -->
+    <div class="card">
+      <div class="ch"><span class="ct">🏆 積分排行榜</span></div>
+      <div class="cb" style="padding:.75rem 1rem">
+        <div class="lb" id="leaderboard">
+          <div class="empty">尚無積分紀錄</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="card">
+      <div class="ch">
+        <span class="ct">📜 歷史記錄</span>
+        <span class="pill" id="pill-hist">0 場</span>
+      </div>
+      <div class="cb" style="padding:.75rem 1rem">
+        <div class="hist-list" id="hist-list">
+          <div class="empty">尚無記錄</div>
+        </div>
+      </div>
+    </div>
+
   </div>
+  <div class="notif" id="notif"></div>
 
-  <!-- Actions -->
-  <div class="act-row">
-    <button class="btn-shuffle" id="btn-shuffle" onclick="doShuffle()" disabled>🔀 打亂預覽配對</button>
-    <button class="btn-release" id="btn-release" onclick="doRelease()" disabled>▶ 釋出上場</button>
-  </div>
+  <script>
+    // ═══════════════════════════════════════════════════════
+    //  STATE
+    //  player: { id, name, joinTime, zone:'new'|'win'|'lose',
+    //            matchCount, wins, losses,
+    //            teammates:[id], opponents:[id] }
+    //  court:  { id, courtNum, teamA:[p,p], teamB:[p,p], startTime }
+    //  hist:   { ...court, endTime, winner:'A'|'B'|null }
+    //  preview:[ { courtNum, teamA:[p,p], teamB:[p,p], score } ]
+    // ═══════════════════════════════════════════════════════
+    let players = [], courts = [], history = [], preview = [], nextId = 1
 
-  <!-- Preview -->
-  <div class="card" id="preview-card" style="display:none">
-    <div class="ch">
-      <span class="ct">🎯 預覽配對</span>
-      <span style="font-size:.76rem;color:var(--muted)">確認後按「釋出上場」</span>
-    </div>
-    <div class="cb"><div class="prev-list" id="prev-list"></div></div>
-  </div>
+    const uid = () => nextId++
+    const now = () => new Date()
+    const fmt = d => d.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })
+    const fmtF = d => d.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' }) + ' ' + fmt(d)
 
-  <!-- Courts -->
-  <div class="card">
-    <div class="ch">
-      <span class="ct">🏟 上場中</span>
-      <span class="pill" id="pill-courts">0 場</span>
-    </div>
-    <div class="cb">
-      <div class="courts-grid" id="courts-grid"><div class="empty">目前無上場隊伍</div></div>
-    </div>
-  </div>
+    function toast(msg) {
+      const el = document.getElementById('notif')
+      el.textContent = msg; el.classList.add('show')
+      clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2400)
+    }
 
-  <!-- Leaderboard -->
-  <div class="card">
-    <div class="ch"><span class="ct">🏆 積分排行榜</span></div>
-    <div class="cb" style="padding:.75rem 1rem">
-      <div class="lb" id="leaderboard"><div class="empty">尚無積分紀錄</div></div>
-    </div>
-  </div>
+    // ═══════════════════════════════════════════════════════
+    //  REGISTER
+    // ═══════════════════════════════════════════════════════
+    function addPlayer() {
+      const inp = document.getElementById('name-input')
+      const raw = inp.value.trim()
+      if (!raw) { toast('請輸入姓名'); return }
+      const names = raw.split(/[,，、\s]+/).map(n => n.trim()).filter(n => n.length > 0)
+      if (!names.length) { toast('請輸入姓名'); return }
+      let added = 0, dups = []
+      names.forEach(name => {
+        if (players.find(p => p.name === name)) { dups.push(name); return }
+        players.push({
+          id: uid(), name, joinTime: now(), zone: 'new',
+          matchCount: 0, wins: 0, losses: 0, teammates: [], opponents: []
+        })
+        added++
+      })
+      inp.value = ''; inp.focus(); preview = []; renderAll()
+      if (!added) { toast(`「${dups.join('、')}」已在名單`); return }
+      const addedNames = names.filter(n => !dups.includes(n))
+      const msg = added > 1 ? `✅ 加入 ${added} 人：${addedNames.join('、')}` : `✅ ${addedNames[0]} 已報名（新進）`
+      toast(dups.length ? msg + `（${dups.join('、')} 重複跳過）` : msg)
+    }
+    document.getElementById('name-input').addEventListener('keydown', e => { if (e.key === 'Enter') addPlayer() })
 
-  <!-- History -->
-  <div class="card">
-    <div class="ch">
-      <span class="ct">📜 歷史記錄</span>
-      <span class="pill" id="pill-hist">0 場</span>
-    </div>
-    <div class="cb" style="padding:.75rem 1rem">
-      <div class="hist-list" id="hist-list"><div class="empty">尚無記錄</div></div>
-    </div>
-  </div>
+    // ═══════════════════════════════════════════════════════
+    //  LOAD FROM CSV
+    // ═══════════════════════════════════════════════════════
+    function loadCSV() {
+      const url = './players.csv?t=' + Date.now() // 避免快取
+      toast('⏳ 載入中...')
+      fetch(url)
+        .then(r => {
+          if (!r.ok) throw new Error('找不到 players.csv（HTTP ' + r.status + '）')
+          return r.text()
+        })
+        .then(text => {
+          const names = text
+            .split(/[\r\n]+/)         // 每行切開
+            .flatMap(line => line.split(/[,，、]+/)) // 同行逗號也支援
+            .map(n => n.trim())
+            .filter(n => n.length > 0 && !n.toLowerCase().startsWith('name')) // 跳過標題行
+          if (!names.length) { toast('CSV 內容為空'); return }
+          let added = 0, dups = 0
+          names.forEach(name => {
+            if (players.find(p => p.name === name)) { dups++; return }
+            players.push({ id: uid(), name, joinTime: now(), zone: 'new', matchCount: 0, wins: 0, losses: 0, teammates: [], opponents: [] })
+            added++
+          })
+          preview = []; renderAll()
+          toast(`✅ 載入 ${added} 人${dups ? '（' + dups + ' 人重複跳過）' : ''}`)
+        })
+        .catch(err => toast('❌ ' + err.message))
+    }
 
-</div>
-<div class="notif" id="notif"></div>
+    function removePlayer(id) {
+      players = players.filter(p => p.id !== id); preview = []; renderAll()
+    }
 
-<script>
-// ═══════════════════════════════════════════════════════
-//  STATE
-//  player: { id, name, joinTime, zone:'new'|'win'|'lose',
-//            matchCount, wins, losses,
-//            teammates:[id], opponents:[id] }
-//  court:  { id, courtNum, teamA:[p,p], teamB:[p,p], startTime }
-//  hist:   { ...court, endTime, winner:'A'|'B'|null }
-//  preview:[ { courtNum, teamA:[p,p], teamB:[p,p], score } ]
-// ═══════════════════════════════════════════════════════
-let players=[], courts=[], history=[], preview=[], nextId=1
+    // ═══════════════════════════════════════════════════════
+    //  SHUFFLE ALGORITHM
+    // ═══════════════════════════════════════════════════════
+    function rnd(arr) {
+      const a = [...arr]
+      for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0;[a[i], a[j]] = [a[j], a[i]] }
+      return a
+    }
 
-const uid  = ()=>nextId++
-const now  = ()=>new Date()
-const fmt  = d=>d.toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'})
-const fmtF = d=>d.toLocaleDateString('zh-TW',{month:'2-digit',day:'2-digit'})+' '+fmt(d)
+    // Score one specific split of 4 players into teamA=[a,b] vs teamB=[c,d]
+    // Primary cost: teammate repeats (×2 weight)
+    // Secondary cost: opponent repeats (×1 weight)
+    // Lower = better
+    function splitScore(a, b, c, d) {
+      const tmAB = (a.teammates.includes(b.id) ? 1 : 0) + (b.teammates.includes(a.id) ? 1 : 0)
+      const tmCD = (c.teammates.includes(d.id) ? 1 : 0) + (d.teammates.includes(c.id) ? 1 : 0)
+      let opRep = 0
+      for (const x of [a, b]) for (const y of [c, d])
+        opRep += (x.opponents.includes(y.id) ? 1 : 0) + (y.opponents.includes(x.id) ? 1 : 0)
+      return (tmAB + tmCD) * 2 + opRep
+    }
 
-function toast(msg){
-  const el=document.getElementById('notif')
-  el.textContent=msg;el.classList.add('show')
-  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2400)
-}
+    // There are exactly 3 distinct ways to split 4 players into 2 pairs:
+    // (01)(23)  (02)(13)  (03)(12)
+    function bestSplit(four) {
+      const [a, b, c, d] = four
+      const opts = [
+        { teamA: [a, b], teamB: [c, d], score: splitScore(a, b, c, d) },
+        { teamA: [a, c], teamB: [b, d], score: splitScore(a, c, b, d) },
+        { teamA: [a, d], teamB: [b, c], score: splitScore(a, d, b, c) },
+      ]
+      const minScore = Math.min(...opts.map(o => o.score))
+      // Among tied options, pick randomly for fairness
+      return rnd(opts.filter(o => o.score === minScore))[0]
+    }
 
-// ═══════════════════════════════════════════════════════
-//  REGISTER
-// ═══════════════════════════════════════════════════════
-function addPlayer(){
-  const inp=document.getElementById('name-input')
-  const name=inp.value.trim()
-  if(!name){toast('請輸入姓名');return}
-  if(players.find(p=>p.name===name)){toast(`「${name}」已在名單`);return}
-  players.push({id:uid(),name,joinTime:now(),zone:'new',
-    matchCount:0,wins:0,losses:0,teammates:[],opponents:[]})
-  inp.value='';inp.focus();preview=[];renderAll();toast(`✅ ${name} 已報名（新進）`)
-}
-document.getElementById('name-input').addEventListener('keydown',e=>{if(e.key==='Enter')addPlayer()})
+    function doShuffle() {
+      const maxCourts = Math.min(10, parseInt(document.getElementById('court-count').value) || 2)
+      const onCourtIds = new Set(courts.flatMap(c => [...c.teamA, ...c.teamB].map(p => p.id)))
+      const waiting = players.filter(p => !onCourtIds.has(p.id))
+      const slots = maxCourts - courts.length
 
-function removePlayer(id){
-  players=players.filter(p=>p.id!==id);preview=[];renderAll()
-}
+      if (slots <= 0) { toast('場地已滿'); return }
+      if (waiting.length < 4) { toast('等待人數不足（需至少 4 人）'); return }
 
-// ═══════════════════════════════════════════════════════
-//  SHUFFLE ALGORITHM
-// ═══════════════════════════════════════════════════════
-function rnd(arr){
-  const a=[...arr]
-  for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}
-  return a
-}
+      // ── Priority pools ──────────────────────────────────
+      // new > win > lose;  within each zone: fewest matchCount first
+      const byMatches = arr => [...arr].sort((a, b) => a.matchCount - b.matchCount)
 
-// Score one specific split of 4 players into teamA=[a,b] vs teamB=[c,d]
-// Primary cost: teammate repeats (×2 weight)
-// Secondary cost: opponent repeats (×1 weight)
-// Lower = better
-function splitScore(a,b,c,d){
-  const tmAB=(a.teammates.includes(b.id)?1:0)+(b.teammates.includes(a.id)?1:0)
-  const tmCD=(c.teammates.includes(d.id)?1:0)+(d.teammates.includes(c.id)?1:0)
-  let opRep=0
-  for(const x of [a,b]) for(const y of [c,d])
-    opRep+=(x.opponents.includes(y.id)?1:0)+(y.opponents.includes(x.id)?1:0)
-  return (tmAB+tmCD)*2+opRep
-}
+      const poolNew = byMatches(waiting.filter(p => p.zone === 'new'))
+      const poolWin = byMatches(waiting.filter(p => p.zone === 'win'))
+      const poolLose = byMatches(waiting.filter(p => p.zone === 'lose'))
 
-// There are exactly 3 distinct ways to split 4 players into 2 pairs:
-// (01)(23)  (02)(13)  (03)(12)
-function bestSplit(four){
-  const [a,b,c,d]=four
-  const opts=[
-    {teamA:[a,b],teamB:[c,d],score:splitScore(a,b,c,d)},
-    {teamA:[a,c],teamB:[b,d],score:splitScore(a,c,b,d)},
-    {teamA:[a,d],teamB:[b,c],score:splitScore(a,d,b,c)},
-  ]
-  const minScore=Math.min(...opts.map(o=>o.score))
-  // Among tied options, pick randomly for fairness
-  return rnd(opts.filter(o=>o.score===minScore))[0]
-}
+      // Drain each pool into groups of 4, collecting leftovers
+      const groups = []
+      function drainPool(pool) {
+        while (pool.length >= 4) groups.push(pool.splice(0, 4))
+        return pool // leftover
+      }
 
-function doShuffle(){
-  const maxCourts=Math.min(10,parseInt(document.getElementById('court-count').value)||2)
-  const onCourtIds=new Set(courts.flatMap(c=>[...c.teamA,...c.teamB].map(p=>p.id)))
-  const waiting=players.filter(p=>!onCourtIds.has(p.id))
-  const slots=maxCourts-courts.length
+      const leftNew = drainPool(poolNew)
+      const leftWin = drainPool(poolWin)
+      const leftLose = drainPool(poolLose)
 
-  if(slots<=0){toast('場地已滿');return}
-  if(waiting.length<4){toast('等待人數不足（需至少 4 人）');return}
+      // Cross-zone: new leftovers first, then win, then lose
+      const cross = byMatches([...leftNew, ...leftWin, ...leftLose])
+      drainPool(cross)
 
-  // ── Priority pools ──────────────────────────────────
-  // new > win > lose;  within each zone: fewest matchCount first
-  const byMatches=arr=>[...arr].sort((a,b)=>a.matchCount-b.matchCount)
+      // ── Assign groups to courts (up to slots) ───────────
+      const newPreview = []
+      const usedNums = new Set(courts.map(c => c.courtNum))
+      const nextNum = () => { let n = 1; while (usedNums.has(n)) n++; usedNums.add(n); return n }
+      const usedIds = new Set()
 
-  const poolNew =byMatches(waiting.filter(p=>p.zone==='new'))
-  const poolWin =byMatches(waiting.filter(p=>p.zone==='win'))
-  const poolLose=byMatches(waiting.filter(p=>p.zone==='lose'))
+      for (const grp of groups) {
+        if (newPreview.length >= slots) break
+        if (grp.some(p => usedIds.has(p.id))) continue
+        const { teamA, teamB, score } = bestSplit(grp)
+        newPreview.push({ courtNum: nextNum(), teamA, teamB, score })
+        grp.forEach(p => usedIds.add(p.id))
+      }
 
-  // Drain each pool into groups of 4, collecting leftovers
-  const groups=[]
-  function drainPool(pool){
-    while(pool.length>=4) groups.push(pool.splice(0,4))
-    return pool // leftover
-  }
+      if (!newPreview.length) { toast('無法組成完整對戰（等待人數需為 4 的倍數）'); return }
+      preview = newPreview; renderAll(); toast(`🎯 已產生 ${newPreview.length} 場預覽，確認後釋出`)
+    }
 
-  const leftNew =drainPool(poolNew)
-  const leftWin =drainPool(poolWin)
-  const leftLose=drainPool(poolLose)
+    // ═══════════════════════════════════════════════════════
+    //  RELEASE TO COURT
+    // ═══════════════════════════════════════════════════════
+    function doRelease() {
+      if (!preview.length) { toast('請先打亂預覽'); return }
+      preview.forEach(m => {
+        courts.push({ id: uid(), courtNum: m.courtNum, teamA: m.teamA, teamB: m.teamB, startTime: now() })
+          // Increment match count
+          ;[...m.teamA, ...m.teamB].forEach(p => p.matchCount++)
+        // Record teammates (bidirectional)
+        const addTM = (pa, pb) => { if (!pa.teammates.includes(pb.id)) pa.teammates.push(pb.id) }
+        m.teamA.forEach(p => m.teamA.forEach(q => { if (p.id !== q.id) { addTM(p, q); addTM(q, p) } }))
+        m.teamB.forEach(p => m.teamB.forEach(q => { if (p.id !== q.id) { addTM(p, q); addTM(q, p) } }))
+        // Record opponents (bidirectional)
+        m.teamA.forEach(p => m.teamB.forEach(q => {
+          if (!p.opponents.includes(q.id)) p.opponents.push(q.id)
+          if (!q.opponents.includes(p.id)) q.opponents.push(p.id)
+        }))
+      })
+      preview = []; renderAll(); toast(`▶ 已釋出 ${courts.length} 場！`)
+    }
 
-  // Cross-zone: new leftovers first, then win, then lose
-  const cross=byMatches([...leftNew,...leftWin,...leftLose])
-  drainPool(cross)
+    // ═══════════════════════════════════════════════════════
+    //  RECORD RESULT
+    // ═══════════════════════════════════════════════════════
+    function recordResult(courtId, winner) {
+      const idx = courts.findIndex(c => c.id === courtId); if (idx === -1) return
+      const c = courts[idx]
+      if (winner === 'A') {
+        c.teamA.forEach(p => { p.wins++; p.zone = 'win' })
+        c.teamB.forEach(p => { p.losses++; p.zone = 'lose' })
+      } else if (winner === 'B') {
+        c.teamB.forEach(p => { p.wins++; p.zone = 'win' })
+        c.teamA.forEach(p => { p.losses++; p.zone = 'lose' })
+      }
+      history.unshift({ ...c, endTime: now(), winner })
+      courts.splice(idx, 1)
+      const wt = winner === 'A' ? c.teamA : winner === 'B' ? c.teamB : null
+      toast(wt ? `🏆 ${wt.map(p => p.name).join(' & ')} 獲勝！` : `場地 ${c.courtNum} 結束（不計分）`)
+      renderAll()
+    }
 
-  // ── Assign groups to courts (up to slots) ───────────
-  const newPreview=[]
-  const usedNums=new Set(courts.map(c=>c.courtNum))
-  const nextNum=()=>{let n=1;while(usedNums.has(n))n++;usedNums.add(n);return n}
-  const usedIds=new Set()
+    // ═══════════════════════════════════════════════════════
+    //  RENDER
+    // ═══════════════════════════════════════════════════════
+    function renderAll() { renderChips(); renderPreview(); renderCourts(); renderLeaderboard(); renderHistory(); updateBtns() }
 
-  for(const grp of groups){
-    if(newPreview.length>=slots) break
-    if(grp.some(p=>usedIds.has(p.id))) continue
-    const {teamA,teamB,score}=bestSplit(grp)
-    newPreview.push({courtNum:nextNum(),teamA,teamB,score})
-    grp.forEach(p=>usedIds.add(p.id))
-  }
+    function updateBtns() {
+      const max = Math.min(10, parseInt(document.getElementById('court-count').value) || 2)
+      const onCourtIds = new Set(courts.flatMap(c => [...c.teamA, ...c.teamB].map(p => p.id)))
+      const waiting = players.filter(p => !onCourtIds.has(p.id))
+      document.getElementById('btn-shuffle').disabled = waiting.length < 4 || (max - courts.length) <= 0
+      document.getElementById('btn-release').disabled = preview.length === 0
+    }
 
-  if(!newPreview.length){toast('無法組成完整對戰（等待人數需為 4 的倍數）');return}
-  preview=newPreview;renderAll();toast(`🎯 已產生 ${newPreview.length} 場預覽，確認後釋出`)
-}
-
-// ═══════════════════════════════════════════════════════
-//  RELEASE TO COURT
-// ═══════════════════════════════════════════════════════
-function doRelease(){
-  if(!preview.length){toast('請先打亂預覽');return}
-  preview.forEach(m=>{
-    courts.push({id:uid(),courtNum:m.courtNum,teamA:m.teamA,teamB:m.teamB,startTime:now()})
-    // Increment match count
-    ;[...m.teamA,...m.teamB].forEach(p=>p.matchCount++)
-    // Record teammates (bidirectional)
-    const addTM=(pa,pb)=>{if(!pa.teammates.includes(pb.id))pa.teammates.push(pb.id)}
-    m.teamA.forEach(p=>m.teamA.forEach(q=>{if(p.id!==q.id){addTM(p,q);addTM(q,p)}}))
-    m.teamB.forEach(p=>m.teamB.forEach(q=>{if(p.id!==q.id){addTM(p,q);addTM(q,p)}}))
-    // Record opponents (bidirectional)
-    m.teamA.forEach(p=>m.teamB.forEach(q=>{
-      if(!p.opponents.includes(q.id))p.opponents.push(q.id)
-      if(!q.opponents.includes(p.id))q.opponents.push(p.id)
-    }))
-  })
-  preview=[];renderAll();toast(`▶ 已釋出 ${courts.length} 場！`)
-}
-
-// ═══════════════════════════════════════════════════════
-//  RECORD RESULT
-// ═══════════════════════════════════════════════════════
-function recordResult(courtId,winner){
-  const idx=courts.findIndex(c=>c.id===courtId);if(idx===-1)return
-  const c=courts[idx]
-  if(winner==='A'){
-    c.teamA.forEach(p=>{p.wins++;p.zone='win'})
-    c.teamB.forEach(p=>{p.losses++;p.zone='lose'})
-  } else if(winner==='B'){
-    c.teamB.forEach(p=>{p.wins++;p.zone='win'})
-    c.teamA.forEach(p=>{p.losses++;p.zone='lose'})
-  }
-  history.unshift({...c,endTime:now(),winner})
-  courts.splice(idx,1)
-  const wt=winner==='A'?c.teamA:winner==='B'?c.teamB:null
-  toast(wt?`🏆 ${wt.map(p=>p.name).join(' & ')} 獲勝！`:`場地 ${c.courtNum} 結束（不計分）`)
-  renderAll()
-}
-
-// ═══════════════════════════════════════════════════════
-//  RENDER
-// ═══════════════════════════════════════════════════════
-function renderAll(){renderChips();renderPreview();renderCourts();renderLeaderboard();renderHistory();updateBtns()}
-
-function updateBtns(){
-  const max=Math.min(10,parseInt(document.getElementById('court-count').value)||2)
-  const onCourtIds=new Set(courts.flatMap(c=>[...c.teamA,...c.teamB].map(p=>p.id)))
-  const waiting=players.filter(p=>!onCourtIds.has(p.id))
-  document.getElementById('btn-shuffle').disabled=waiting.length<4||(max-courts.length)<=0
-  document.getElementById('btn-release').disabled=preview.length===0
-}
-
-function renderChips(){
-  const onCourtIds=new Set(courts.flatMap(c=>[...c.teamA,...c.teamB].map(p=>p.id)))
-  const previewIds=new Set(preview.flatMap(m=>[...m.teamA,...m.teamB].map(p=>p.id)))
-  const waiting=players.filter(p=>!onCourtIds.has(p.id)).length
-  document.getElementById('pill-total').textContent=players.length+' 人'
-  document.getElementById('pill-wait').textContent='等待 '+waiting
-  const el=document.getElementById('chip-list')
-  if(!players.length){el.innerHTML='<span style="color:var(--muted);font-size:.82rem">尚無人報名</span>';return}
-  const zoneBg={new:'var(--green)',win:'var(--green)',lose:'var(--red)'}
-  const zoneLabel={new:'新',win:'贏',lose:'輸'}
-  el.innerHTML=players.map((p,i)=>{
-    const oc=onCourtIds.has(p.id),ip=previewIds.has(p.id)
-    const cls=oc?'chip chip-court':ip?'chip chip-preview':'chip chip-wait'
-    const rk_bg=oc?'#7a8f9a':ip?'#c89020':zoneBg[p.zone]
-    const tag=oc?`<span class="chip-tag tag-court">上場中</span>`:ip?`<span class="chip-tag tag-prev">預覽中</span>`:''
-    return `<div class="${cls}">
-      <span class="chip-rk" style="background:${rk_bg}">${i+1}</span>
+    function renderChips() {
+      const onCourtIds = new Set(courts.flatMap(c => [...c.teamA, ...c.teamB].map(p => p.id)))
+      const previewIds = new Set(preview.flatMap(m => [...m.teamA, ...m.teamB].map(p => p.id)))
+      const waiting = players.filter(p => !onCourtIds.has(p.id)).length
+      document.getElementById('pill-total').textContent = players.length + ' 人'
+      document.getElementById('pill-wait').textContent = '等待 ' + waiting
+      const el = document.getElementById('chip-list')
+      if (!players.length) { el.innerHTML = '<span style="color:var(--muted);font-size:.82rem">尚無人報名</span>'; return }
+      const zoneBg = { new: 'var(--green)', win: 'var(--green)', lose: 'var(--red)' }
+      const zoneLabel = { new: '新', win: '贏', lose: '輸' }
+      el.innerHTML = players.map((p, i) => {
+        const oc = onCourtIds.has(p.id), ip = previewIds.has(p.id)
+        const cls = oc ? 'chip chip-court' : ip ? 'chip chip-preview' : 'chip chip-wait'
+        const rk_bg = oc ? '#7a8f9a' : ip ? '#c89020' : zoneBg[p.zone]
+        const tag = oc ? `<span class="chip-tag tag-court">上場中</span>` : ip ? `<span class="chip-tag tag-prev">預覽中</span>` : ''
+        return `<div class="${cls}">
+      <span class="chip-rk" style="background:${rk_bg}">${i + 1}</span>
       ${p.name}
-      <span style="font-size:.58rem;opacity:.65">${zoneLabel[p.zone]||''}</span>
+      <span style="font-size:.58rem;opacity:.65">${zoneLabel[p.zone] || ''}</span>
       ${tag}
-      ${!oc?`<button class="chip-del" onclick="removePlayer(${p.id})">✕</button>`:''}
+      ${!oc ? `<button class="chip-del" onclick="removePlayer(${p.id})">✕</button>` : ''}
     </div>`
-  }).join('')
-}
+      }).join('')
+    }
 
-function renderPreview(){
-  const card=document.getElementById('preview-card')
-  if(!preview.length){card.style.display='none';return}
-  card.style.display='block'
-  const onCourtIds=new Set(courts.flatMap(c=>[...c.teamA,...c.teamB].map(p=>p.id)))
-  const previewIds=new Set(preview.flatMap(m=>[...m.teamA,...m.teamB].map(p=>p.id)))
-  const leftover=players.filter(p=>!onCourtIds.has(p.id)&&!previewIds.has(p.id))
-  document.getElementById('prev-list').innerHTML=
-    preview.map(m=>`<div class="prev-match">
+    function renderPreview() {
+      const card = document.getElementById('preview-card')
+      if (!preview.length) { card.style.display = 'none'; return }
+      card.style.display = 'block'
+      const onCourtIds = new Set(courts.flatMap(c => [...c.teamA, ...c.teamB].map(p => p.id)))
+      const previewIds = new Set(preview.flatMap(m => [...m.teamA, ...m.teamB].map(p => p.id)))
+      const leftover = players.filter(p => !onCourtIds.has(p.id) && !previewIds.has(p.id))
+      document.getElementById('prev-list').innerHTML =
+        preview.map(m => `<div class="prev-match">
       <span class="prev-court-lbl">場地 ${m.courtNum}</span>
-      <div class="prev-team">${m.teamA.map(p=>`<span class="prev-nm">${p.name}</span>`).join('')}</div>
+      <div class="prev-team">${m.teamA.map(p => `<span class="prev-nm">${p.name}</span>`).join('')}</div>
       <span class="prev-vs">VS</span>
-      <div class="prev-team">${m.teamB.map(p=>`<span class="prev-nm">${p.name}</span>`).join('')}</div>
+      <div class="prev-team">${m.teamB.map(p => `<span class="prev-nm">${p.name}</span>`).join('')}</div>
       <span class="prev-score" title="重複度：重複隊友(×2)+重複對手，越低越好">重複度 ${m.score}</span>
-    </div>`).join('')+
-    (leftover.length?`<div class="prev-left">等待下一輪：${leftover.map(p=>p.name).join('、')}</div>`:'')
-}
+    </div>`).join('') +
+        (leftover.length ? `<div class="prev-left">等待下一輪：${leftover.map(p => p.name).join('、')}</div>` : '')
+    }
 
-function renderCourts(){
-  const grid=document.getElementById('courts-grid')
-  document.getElementById('pill-courts').textContent=courts.length+' 場'
-  if(!courts.length){grid.innerHTML='<div class="empty">目前無上場隊伍</div>';return}
-  grid.innerHTML=courts.map(c=>`<div class="cc">
+    function renderCourts() {
+      const grid = document.getElementById('courts-grid')
+      document.getElementById('pill-courts').textContent = courts.length + ' 場'
+      if (!courts.length) { grid.innerHTML = '<div class="empty">目前無上場隊伍</div>'; return }
+      grid.innerHTML = courts.map(c => `<div class="cc">
     <div class="cc-head">
       <span class="cc-title">場地 ${c.courtNum}</span>
       <span class="cc-time">${fmt(c.startTime)}</span>
     </div>
     <div class="cc-teams">
-      <div class="team-col">${c.teamA.map(p=>`<div class="team-pl">${p.name}</div>`).join('')}</div>
+      <div class="team-col">${c.teamA.map(p => `<div class="team-pl">${p.name}</div>`).join('')}</div>
       <span class="vs-div">VS</span>
-      <div class="team-col">${c.teamB.map(p=>`<div class="team-pl">${p.name}</div>`).join('')}</div>
+      <div class="team-col">${c.teamB.map(p => `<div class="team-pl">${p.name}</div>`).join('')}</div>
     </div>
     <div class="cc-acts">
-      <button class="btn-wa" onclick="recordResult(${c.id},'A')">🏆 ${c.teamA.map(p=>p.name).join('&amp;')} 勝</button>
-      <button class="btn-wb" onclick="recordResult(${c.id},'B')">🏆 ${c.teamB.map(p=>p.name).join('&amp;')} 勝</button>
+      <button class="btn-wa" onclick="recordResult(${c.id},'A')">🏆 ${c.teamA.map(p => p.name).join('&amp;')} 勝</button>
+      <button class="btn-wb" onclick="recordResult(${c.id},'B')">🏆 ${c.teamB.map(p => p.name).join('&amp;')} 勝</button>
       <button class="btn-no" onclick="recordResult(${c.id},null)" title="不計分結束">✕</button>
     </div>
   </div>`).join('')
-}
+    }
 
-function renderLeaderboard(){
-  const el=document.getElementById('leaderboard')
-  const onCourtIds=new Set(courts.flatMap(c=>[...c.teamA,...c.teamB].map(p=>p.id)))
-  const ranked=[...players].filter(p=>p.matchCount>0)
-    .sort((a,b)=>b.wins-a.wins||a.losses-b.losses||b.matchCount-a.matchCount)
-  if(!ranked.length){el.innerHTML='<div class="empty">尚無積分紀錄</div>';return}
-  const sym=i=>i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)
-  const rcls=i=>i===0?'lbr g1':i===1?'lbr g2':i===2?'lbr g3':'lbr'
-  el.innerHTML=`<div class="lb-hd">
+    function renderLeaderboard() {
+      const el = document.getElementById('leaderboard')
+      const onCourtIds = new Set(courts.flatMap(c => [...c.teamA, ...c.teamB].map(p => p.id)))
+      const ranked = [...players].filter(p => p.matchCount > 0)
+        .sort((a, b) => b.wins - a.wins || a.losses - b.losses || b.matchCount - a.matchCount)
+      if (!ranked.length) { el.innerHTML = '<div class="empty">尚無積分紀錄</div>'; return }
+      const sym = i => i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1)
+      const rcls = i => i === 0 ? 'lbr g1' : i === 1 ? 'lbr g2' : i === 2 ? 'lbr g3' : 'lbr'
+      el.innerHTML = `<div class="lb-hd">
     <span style="text-align:center">名次</span>
     <span>選手</span>
     <span style="text-align:center">勝</span>
     <span style="text-align:center">敗</span>
     <span style="text-align:center">場數</span>
     <span style="text-align:center">勝率</span>
-    <span>勝率條</span>
-  </div>`+ranked.map((p,i)=>{
-    const rate=p.matchCount>0?Math.round(p.wins/p.matchCount*100):0
-    const barColor=rate>=50?'var(--green)':'var(--red)'
-    const oc=onCourtIds.has(p.id)
-    return `<div class="lb-row">
+    <span class="lbbar-hd">勝率條</span>
+  </div>`+ ranked.map((p, i) => {
+        const rate = p.matchCount > 0 ? Math.round(p.wins / p.matchCount * 100) : 0
+        const barColor = rate >= 50 ? 'var(--green)' : 'var(--red)'
+        const oc = onCourtIds.has(p.id)
+        return `<div class="lb-row">
       <span class="${rcls(i)}">${sym(i)}</span>
-      <span class="lbn">${p.name}${oc?'<span class="oc">上場中</span>':''}</span>
+      <span class="lbn">${p.name}${oc ? '<span class="oc">上場中</span>' : ''}</span>
       <span class="lbw">${p.wins}</span>
       <span class="lbl">${p.losses}</span>
       <span class="lbt">${p.matchCount}</span>
       <span class="lbwr" style="color:${barColor}">${rate}%</span>
       <div class="lbbar"><div class="lbbar-fill" style="width:${rate}%;background:${barColor}"></div></div>
     </div>`
-  }).join('')
-}
+      }).join('')
+    }
 
-function renderHistory(){
-  const el=document.getElementById('hist-list')
-  document.getElementById('pill-hist').textContent=history.length+' 場'
-  if(!history.length){el.innerHTML='<div class="empty">尚無記錄</div>';return}
-  el.innerHTML=history.map(h=>{
-    const wA=h.winner==='A',wB=h.winner==='B'
-    return `<div class="hi">
+    function renderHistory() {
+      const el = document.getElementById('hist-list')
+      document.getElementById('pill-hist').textContent = history.length + ' 場'
+      if (!history.length) { el.innerHTML = '<div class="empty">尚無記錄</div>'; return }
+      el.innerHTML = history.map(h => {
+        const wA = h.winner === 'A', wB = h.winner === 'B'
+        return `<div class="hi">
       <div class="hi-head">
         <span class="hi-court">場地 ${h.courtNum}</span>
         <span class="hi-time">${fmtF(h.startTime)} ～ ${fmt(h.endTime)}</span>
       </div>
       <div class="hi-match">
-        <div class="hi-team">${h.teamA.map(p=>`<span class="hi-nm${wA?' hi-win':''}">${p.name}</span>`).join('')}</div>
+        <div class="hi-team">${h.teamA.map(p => `<span class="hi-nm${wA ? ' hi-win' : ''}">${p.name}</span>`).join('')}</div>
         <span class="hi-vs">VS</span>
-        <div class="hi-team">${h.teamB.map(p=>`<span class="hi-nm${wB?' hi-win':''}">${p.name}</span>`).join('')}</div>
-        <span class="hi-res">${h.winner?'🏆 '+(h.winner==='A'?h.teamA:h.teamB).map(p=>p.name).join(' & '):'—'}</span>
+        <div class="hi-team">${h.teamB.map(p => `<span class="hi-nm${wB ? ' hi-win' : ''}">${p.name}</span>`).join('')}</div>
+        <span class="hi-res">${h.winner ? '🏆 ' + (h.winner === 'A' ? h.teamA : h.teamB).map(p => p.name).join(' & ') : '—'}</span>
       </div>
     </div>`
-  }).join('')
-}
+      }).join('')
+    }
 
-renderAll()
-</script>
+    renderAll()
+  </script>
 </body>
+
 </html>
