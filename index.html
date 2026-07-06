@@ -1574,7 +1574,7 @@
     function pushToGitHub() {
       const enc = localStorage.getItem('pb_token_enc')
       if (!enc) {
-        toast('⚙️ 請先點 logo 5 下設定推送 Token')
+        toast('⚙️') // '⚙️ 請先點 logo 5 下設定推送 Token'
         return
       }
       document.getElementById('push-pw').value = ''
