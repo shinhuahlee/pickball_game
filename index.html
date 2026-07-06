@@ -9,222 +9,901 @@
     href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap"
     rel="stylesheet">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0 }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
 
     :root {
-      --green: #2a7a38; --green-l: #e7f5ea; --green-m: #5cb56a;
-      --yellow: #d4900a; --yellow-l: #fef6e0;
-      --blue: #1a5c8a; --blue-l: #e3f0fa;
-      --red: #b83228; --red-l: #fdecea;
-      --bg: #f1f6f2; --card: #fff; --text: #1a2a1c;
-      --muted: #7a8f7c; --border: #d0e6d3; --r: 13px;
+      --green: #2a7a38;
+      --green-l: #e7f5ea;
+      --green-m: #5cb56a;
+      --yellow: #d4900a;
+      --yellow-l: #fef6e0;
+      --blue: #1a5c8a;
+      --blue-l: #e3f0fa;
+      --red: #b83228;
+      --red-l: #fdecea;
+      --bg: #f1f6f2;
+      --card: #fff;
+      --text: #1a2a1c;
+      --muted: #7a8f7c;
+      --border: #d0e6d3;
+      --r: 13px;
     }
 
     body {
       font-family: 'Noto Sans TC', sans-serif;
-      background: var(--bg); color: var(--text);
-      min-height: 100vh; -webkit-text-size-adjust: 100%;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-text-size-adjust: 100%;
     }
 
-    button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; cursor: pointer; font-family: inherit }
+    button {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      cursor: pointer;
+      font-family: inherit
+    }
 
     /* ── Header ── */
     header {
       background: var(--green);
       padding: .6rem .85rem;
-      display: flex; flex-wrap: wrap;
-      align-items: center; gap: 6px 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.18);
-      position: sticky; top: 0; z-index: 100;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, .18);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
 
-    .logo { font-family:'Nunito',sans-serif; font-weight:900; font-size:1.25rem; color:#fff; letter-spacing:-.02em; line-height:1.15 }
-    .logo em { color:#fdd94a; font-style:normal }
-    .logo-sub { font-size:.62rem; color:rgba(255,255,255,.5); letter-spacing:.07em }
+    .logo {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 900;
+      font-size: 1.25rem;
+      color: #fff;
+      letter-spacing: -.02em;
+      line-height: 1.15
+    }
 
-    .hdr-right { margin-left:auto; display:flex; align-items:center; flex-wrap:wrap; gap:5px; justify-content:flex-end }
+    .logo em {
+      color: #fdd94a;
+      font-style: normal
+    }
 
-    .court-box { display:flex; align-items:center; gap:4px; background:rgba(255,255,255,.13); border-radius:9px; padding:5px 9px }
-    .court-box label { font-size:.75rem; color:rgba(255,255,255,.85) }
-    .court-box input { width:36px; background:rgba(255,255,255,.22); border:1px solid rgba(255,255,255,.35); border-radius:6px; color:#fff; font-size:.9rem; font-weight:700; text-align:center; padding:3px; outline:none; font-family:inherit }
-    .court-max-hint { font-size:.62rem; color:rgba(255,255,255,.5) }
+    .logo-sub {
+      font-size: .62rem;
+      color: rgba(255, 255, 255, .5);
+      letter-spacing: .07em
+    }
+
+    .hdr-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 5px;
+      justify-content: flex-end
+    }
+
+    .court-box {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255, 255, 255, .13);
+      border-radius: 9px;
+      padding: 5px 9px
+    }
+
+    .court-box label {
+      font-size: .75rem;
+      color: rgba(255, 255, 255, .85)
+    }
+
+    .court-box input {
+      width: 36px;
+      background: rgba(255, 255, 255, .22);
+      border: 1px solid rgba(255, 255, 255, .35);
+      border-radius: 6px;
+      color: #fff;
+      font-size: .9rem;
+      font-weight: 700;
+      text-align: center;
+      padding: 3px;
+      outline: none;
+      font-family: inherit
+    }
+
+    .court-max-hint {
+      font-size: .62rem;
+      color: rgba(255, 255, 255, .5)
+    }
 
     .hdr-btn {
-      background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3);
-      color:#fff; border-radius:8px; padding:6px 10px;
-      font-size:.75rem; white-space:nowrap; min-height:34px;
+      background: rgba(255, 255, 255, .15);
+      border: 1px solid rgba(255, 255, 255, .3);
+      color: #fff;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: .75rem;
+      white-space: nowrap;
+      min-height: 34px;
     }
-    .hdr-btn:active { opacity:.75 }
-    .hdr-btn-gh { background:rgba(40,160,80,.45); border-color:rgba(80,200,100,.5) }
-    .hdr-btn-new { background:rgba(220,80,60,.35); border-color:rgba(255,120,100,.4) }
-    .hdr-btn-print { display:none }   /* 手機隱藏列印 */
 
-    #session-badge { font-size:.65rem; color:rgba(255,255,255,.55); background:rgba(255,255,255,.08); border-radius:5px; padding:2px 7px; white-space:nowrap }
+    .hdr-btn:active {
+      opacity: .75
+    }
+
+    .hdr-btn-gh {
+      background: rgba(40, 160, 80, .45);
+      border-color: rgba(80, 200, 100, .5)
+    }
+
+    .hdr-btn-new {
+      background: rgba(220, 80, 60, .35);
+      border-color: rgba(255, 120, 100, .4)
+    }
+
+    .hdr-btn-print {
+      display: none
+    }
+
+    /* 手機隱藏列印 */
+
+    #session-badge {
+      font-size: .65rem;
+      color: rgba(255, 255, 255, .55);
+      background: rgba(255, 255, 255, .08);
+      border-radius: 5px;
+      padding: 2px 7px;
+      white-space: nowrap
+    }
 
     /* ── Layout ── */
-    .wrap { max-width:1020px; margin:0 auto; padding:.85rem .75rem; display:flex; flex-direction:column; gap:.9rem }
+    .wrap {
+      max-width: 1020px;
+      margin: 0 auto;
+      padding: .85rem .75rem;
+      display: flex;
+      flex-direction: column;
+      gap: .9rem
+    }
 
-    .card { background:var(--card); border-radius:var(--r); border:1px solid var(--border) }
-    .ch { padding:.6rem .95rem; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:7px }
-    .ct { font-weight:700; font-size:.9rem }
-    .pill { font-size:.63rem; font-weight:700; padding:2px 8px; border-radius:20px; background:var(--green-l); color:var(--green); border:1px solid #aad6b4 }
-    .cb { padding:.9rem .95rem }
+    .card {
+      background: var(--card);
+      border-radius: var(--r);
+      border: 1px solid var(--border)
+    }
+
+    .ch {
+      padding: .6rem .95rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 7px
+    }
+
+    .ct {
+      font-weight: 700;
+      font-size: .9rem
+    }
+
+    .pill {
+      font-size: .63rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      background: var(--green-l);
+      color: var(--green);
+      border: 1px solid #aad6b4
+    }
+
+    .cb {
+      padding: .9rem .95rem
+    }
 
     /* ── Registration ── */
-    .reg-row { display:flex; flex-direction:column; gap:8px; margin-bottom:8px }
-    .ni { flex:1; border:1.5px solid var(--border); border-radius:9px; padding:.7rem .9rem; font-size:1rem; font-family:inherit; color:var(--text); background:#fafefc; outline:none; transition:border-color .2s; min-height:46px }
-    .ni:focus { border-color:var(--green-m) }
-    .add-btn { background:var(--green); color:#fff; border:none; border-radius:9px; padding:.7rem 1.1rem; font-size:.95rem; font-weight:700; transition:all .15s; width:100%; min-height:46px }
-    .add-btn:active { background:#1f5e2a }
+    .reg-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 8px
+    }
 
-    .csv-btn { background:var(--blue-l); color:var(--blue); border:1.5px solid #9ec8ea; border-radius:9px; padding:.58rem .9rem; font-size:.88rem; font-weight:700; transition:all .15s; width:100%; text-align:center; min-height:44px }
-    .csv-btn:active { background:var(--blue); color:#fff }
-    .csv-hint { font-size:.7rem; color:var(--muted); margin-top:5px; padding:0 2px }
+    .ni {
+      flex: 1;
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      padding: .7rem .9rem;
+      font-size: 1rem;
+      font-family: inherit;
+      color: var(--text);
+      background: #fafefc;
+      outline: none;
+      transition: border-color .2s;
+      min-height: 46px
+    }
+
+    .ni:focus {
+      border-color: var(--green-m)
+    }
+
+    .add-btn {
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 9px;
+      padding: .7rem 1.1rem;
+      font-size: .95rem;
+      font-weight: 700;
+      transition: all .15s;
+      width: 100%;
+      min-height: 46px
+    }
+
+    .add-btn:active {
+      background: #1f5e2a
+    }
+
+    .csv-btn {
+      background: var(--blue-l);
+      color: var(--blue);
+      border: 1.5px solid #9ec8ea;
+      border-radius: 9px;
+      padding: .58rem .9rem;
+      font-size: .88rem;
+      font-weight: 700;
+      transition: all .15s;
+      width: 100%;
+      text-align: center;
+      min-height: 44px
+    }
+
+    .csv-btn:active {
+      background: var(--blue);
+      color: #fff
+    }
+
+    .csv-hint {
+      font-size: .7rem;
+      color: var(--muted);
+      margin-top: 5px;
+      padding: 0 2px
+    }
 
     /* ── Chips ── */
-    .chips { display:flex; flex-wrap:wrap; gap:6px; min-height:36px }
-    .chip { display:flex; align-items:center; gap:5px; border-radius:30px; padding:5px 10px 5px 7px; font-size:.82rem; font-weight:600 }
-    .chip-wait { background:var(--green-l); border:1px solid #aad6b4; color:var(--green) }
-    .chip-court { background:#e8edf5; border:1px solid #b8c8dc; color:#4a6880; opacity:.72 }
-    .chip-preview { background:var(--yellow-l); border:1px solid #e8c870; color:#8a6010 }
-    .chip-rk { font-size:.6rem; color:#fff; border-radius:50%; width:17px; height:17px; display:flex; align-items:center; justify-content:center; font-weight:700; flex-shrink:0 }
-    .chip-del { background:none; border:none; color:#90ba98; font-size:.9rem; padding:2px 0 2px 2px; line-height:1; min-width:22px; min-height:22px }
-    .chip-del:active { color:var(--red) }
-    .chip-tag { font-size:.58rem; border-radius:4px; padding:1px 5px; margin-left:1px }
-    .tag-court { background:#dce8f5; color:var(--blue) }
-    .tag-prev { background:#fdeec0; color:#8a6010 }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-height: 36px
+    }
+
+    .chip {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      border-radius: 30px;
+      padding: 5px 10px 5px 7px;
+      font-size: .82rem;
+      font-weight: 600
+    }
+
+    .chip-wait {
+      background: var(--green-l);
+      border: 1px solid #aad6b4;
+      color: var(--green)
+    }
+
+    .chip-court {
+      background: #e8edf5;
+      border: 1px solid #b8c8dc;
+      color: #4a6880;
+      opacity: .72
+    }
+
+    .chip-preview {
+      background: var(--yellow-l);
+      border: 1px solid #e8c870;
+      color: #8a6010
+    }
+
+    .chip-rk {
+      font-size: .6rem;
+      color: #fff;
+      border-radius: 50%;
+      width: 17px;
+      height: 17px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      flex-shrink: 0
+    }
+
+    .chip-del {
+      background: none;
+      border: none;
+      color: #90ba98;
+      font-size: .9rem;
+      padding: 2px 0 2px 2px;
+      line-height: 1;
+      min-width: 22px;
+      min-height: 22px
+    }
+
+    .chip-del:active {
+      color: var(--red)
+    }
+
+    .chip-tag {
+      font-size: .58rem;
+      border-radius: 4px;
+      padding: 1px 5px;
+      margin-left: 1px
+    }
+
+    .tag-court {
+      background: #dce8f5;
+      color: var(--blue)
+    }
+
+    .tag-prev {
+      background: #fdeec0;
+      color: #8a6010
+    }
 
     /* ── Action buttons ── */
-    .act-row { display:flex; gap:8px }
+    .act-row {
+      display: flex;
+      gap: 8px
+    }
+
     .btn-shuffle {
-      flex:1; background:var(--yellow); color:#fff; border:none;
-      border-radius:11px; padding:.8rem .9rem; font-size:.95rem; font-weight:900;
-      transition:all .15s; min-height:52px;
+      flex: 1;
+      background: var(--yellow);
+      color: #fff;
+      border: none;
+      border-radius: 11px;
+      padding: .8rem .9rem;
+      font-size: .95rem;
+      font-weight: 900;
+      transition: all .15s;
+      min-height: 52px;
     }
-    .btn-shuffle:active { background:#b07808 }
-    .btn-shuffle:disabled { opacity:.35; cursor:not-allowed }
+
+    .btn-shuffle:active {
+      background: #b07808
+    }
+
+    .btn-shuffle:disabled {
+      opacity: .35;
+      cursor: not-allowed
+    }
+
     .btn-release {
-      flex:1; background:var(--blue); color:#fff; border:none;
-      border-radius:11px; padding:.8rem .9rem; font-size:.95rem; font-weight:900;
-      transition:all .15s; min-height:52px;
+      flex: 1;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 11px;
+      padding: .8rem .9rem;
+      font-size: .95rem;
+      font-weight: 900;
+      transition: all .15s;
+      min-height: 52px;
     }
-    .btn-release:active { background:#12406a }
-    .btn-release:disabled { opacity:.35; cursor:not-allowed }
+
+    .btn-release:active {
+      background: #12406a
+    }
+
+    .btn-release:disabled {
+      opacity: .35;
+      cursor: not-allowed
+    }
 
     /* ── Preview ── */
-    .prev-list { display:flex; flex-direction:column; gap:7px }
-    .prev-match { background:var(--yellow-l); border:1px solid #e8c870; border-radius:9px; padding:.6rem .9rem; display:flex; align-items:center; gap:8px; flex-wrap:wrap }
-    .prev-court-lbl { font-size:.68rem; font-weight:700; color:var(--yellow); background:#fff; border:1px solid #e8c870; border-radius:5px; padding:2px 7px; white-space:nowrap }
-    .prev-team { display:flex; gap:5px; flex-wrap:wrap }
-    .prev-nm { background:#fff; border:1px solid #ddd; border-radius:6px; padding:3px 9px; font-size:.82rem; font-weight:600 }
-    .prev-vs { font-size:.7rem; color:var(--muted); font-weight:700 }
-    .prev-score { font-size:.67rem; color:var(--muted); background:#fff; border:1px solid #e8e8e8; border-radius:5px; padding:1px 7px; white-space:nowrap }
-    .prev-left { font-size:.77rem; color:var(--muted); padding:.35rem .7rem; background:#f4f4f4; border-radius:7px; border:1px solid #e0e0e0 }
+    .prev-list {
+      display: flex;
+      flex-direction: column;
+      gap: 7px
+    }
+
+    .prev-match {
+      background: var(--yellow-l);
+      border: 1px solid #e8c870;
+      border-radius: 9px;
+      padding: .6rem .9rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap
+    }
+
+    .prev-court-lbl {
+      font-size: .68rem;
+      font-weight: 700;
+      color: var(--yellow);
+      background: #fff;
+      border: 1px solid #e8c870;
+      border-radius: 5px;
+      padding: 2px 7px;
+      white-space: nowrap
+    }
+
+    .prev-team {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap
+    }
+
+    .prev-nm {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 3px 9px;
+      font-size: .82rem;
+      font-weight: 600
+    }
+
+    .prev-vs {
+      font-size: .7rem;
+      color: var(--muted);
+      font-weight: 700
+    }
+
+    .prev-score {
+      font-size: .67rem;
+      color: var(--muted);
+      background: #fff;
+      border: 1px solid #e8e8e8;
+      border-radius: 5px;
+      padding: 1px 7px;
+      white-space: nowrap
+    }
+
+    .prev-left {
+      font-size: .77rem;
+      color: var(--muted);
+      padding: .35rem .7rem;
+      background: #f4f4f4;
+      border-radius: 7px;
+      border: 1px solid #e0e0e0
+    }
 
     /* ── Courts ── */
-    .courts-grid { display:grid; grid-template-columns:1fr; gap:9px }
-    .cc { background:var(--blue-l); border:1.5px solid #9ec8ea; border-radius:11px; overflow:hidden }
-    .cc-head { background:var(--blue); padding:.5rem .85rem; display:flex; justify-content:space-between; align-items:center }
-    .cc-title { color:#fff; font-weight:700; font-size:.88rem }
-    .cc-time { color:rgba(255,255,255,.65); font-size:.68rem }
-    .cc-teams { padding:.7rem .85rem; display:flex; align-items:center; gap:8px }
-    .team-col { display:flex; flex-direction:column; gap:4px; flex:1 }
-    .team-pl { background:#fff; border:1px solid #b8d8f0; border-radius:6px; padding:5px 9px; font-size:.85rem; font-weight:600; text-align:center }
-    .vs-div { font-size:.7rem; font-weight:900; color:var(--blue); opacity:.4 }
-    .cc-acts { padding:.5rem .85rem; border-top:1px solid #b8d8f0; display:flex; gap:6px }
-    .btn-wa, .btn-wb {
-      flex:1; border:none; border-radius:8px; padding:.5rem .4rem;
-      font-size:.78rem; font-weight:700; transition:all .15s;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-      min-height:46px;
+    .courts-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 9px
     }
-    .btn-wa { background:var(--green-l); color:var(--green); border:1px solid #aad6b4 }
-    .btn-wa:active { background:var(--green); color:#fff }
-    .btn-wb { background:var(--red-l); color:var(--red); border:1px solid #e0aaa8 }
-    .btn-wb:active { background:var(--red); color:#fff }
-    .btn-no { border:1px solid #ddd; border-radius:8px; padding:.5rem .7rem; font-size:.72rem; background:#f7f7f7; color:var(--muted); min-height:46px }
-    .btn-no:active { background:#eee }
+
+    .cc {
+      background: var(--blue-l);
+      border: 1.5px solid #9ec8ea;
+      border-radius: 11px;
+      overflow: hidden
+    }
+
+    .cc-head {
+      background: var(--blue);
+      padding: .5rem .85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center
+    }
+
+    .cc-title {
+      color: #fff;
+      font-weight: 700;
+      font-size: .88rem
+    }
+
+    .cc-time {
+      color: rgba(255, 255, 255, .65);
+      font-size: .68rem
+    }
+
+    .cc-teams {
+      padding: .7rem .85rem;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .team-col {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1
+    }
+
+    .team-pl {
+      background: #fff;
+      border: 1px solid #b8d8f0;
+      border-radius: 6px;
+      padding: 5px 9px;
+      font-size: .85rem;
+      font-weight: 600;
+      text-align: center
+    }
+
+    .vs-div {
+      font-size: .7rem;
+      font-weight: 900;
+      color: var(--blue);
+      opacity: .4
+    }
+
+    .cc-acts {
+      padding: .5rem .85rem;
+      border-top: 1px solid #b8d8f0;
+      display: flex;
+      gap: 6px
+    }
+
+    .btn-wa,
+    .btn-wb {
+      flex: 1;
+      border: none;
+      border-radius: 8px;
+      padding: .5rem .4rem;
+      font-size: .78rem;
+      font-weight: 700;
+      transition: all .15s;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-height: 46px;
+    }
+
+    .btn-wa {
+      background: var(--green-l);
+      color: var(--green);
+      border: 1px solid #aad6b4
+    }
+
+    .btn-wa:active {
+      background: var(--green);
+      color: #fff
+    }
+
+    .btn-wb {
+      background: var(--red-l);
+      color: var(--red);
+      border: 1px solid #e0aaa8
+    }
+
+    .btn-wb:active {
+      background: var(--red);
+      color: #fff
+    }
+
+    .btn-no {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: .5rem .7rem;
+      font-size: .72rem;
+      background: #f7f7f7;
+      color: var(--muted);
+      min-height: 46px
+    }
+
+    .btn-no:active {
+      background: #eee
+    }
 
     /* ── Leaderboard ── */
-    .lb { display:flex; flex-direction:column; gap:3px }
-    .lb-hd {
-      display:grid;
-      grid-template-columns: 24px 1fr 36px 36px 46px;
-      gap:3px; padding:4px 8px;
-      font-size:.67rem; font-weight:700; color:var(--muted);
-      border-bottom:1px solid var(--border);
+    .lb {
+      display: flex;
+      flex-direction: column;
+      gap: 3px
     }
-    .lb-row {
-      display:grid;
-      grid-template-columns: 24px 1fr 36px 36px 46px;
-      gap:3px; align-items:center; padding:7px 8px;
-      border-radius:8px; font-size:.83rem; transition:background .15s;
-    }
-    .lb-row:active { background:#f3fbf4 }
-    /* 手機隱藏「場數」欄（第5欄） */
-    .lb-hd > *:nth-child(5), .lb-row > *:nth-child(5) { display:none }
 
-    .lbr { font-weight:700; font-size:.77rem; text-align:center; color:var(--muted) }
-    .lbr.g1 { color:#b8860b; font-size:.9rem } .lbr.g2 { color:#888; font-size:.9rem } .lbr.g3 { color:#9a6030; font-size:.9rem }
-    .lbn { font-weight:600; display:flex; align-items:center; gap:4px; min-width:0 }
-    .lbn .oc { font-size:.56rem; color:var(--blue); background:var(--blue-l); border-radius:3px; padding:1px 4px; white-space:nowrap }
-    .lbw { color:var(--green); font-weight:700; text-align:center }
-    .lbl { color:var(--red); font-weight:700; text-align:center }
-    .lbt { color:var(--muted); text-align:center; font-size:.78rem }
-    .lbwr { text-align:center; font-size:.8rem; font-weight:700 }
+    .lb-hd {
+      display: grid;
+      grid-template-columns: 24px 1fr 36px 36px 46px;
+      gap: 3px;
+      padding: 4px 8px;
+      font-size: .67rem;
+      font-weight: 700;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .lb-row {
+      display: grid;
+      grid-template-columns: 24px 1fr 36px 36px 46px;
+      gap: 3px;
+      align-items: center;
+      padding: 7px 8px;
+      border-radius: 8px;
+      font-size: .83rem;
+      transition: background .15s;
+    }
+
+    .lb-row:active {
+      background: #f3fbf4
+    }
+
+    /* 手機隱藏「場數」欄（第5欄） */
+    .lb-hd>*:nth-child(5),
+    .lb-row>*:nth-child(5) {
+      display: none
+    }
+
+    .lbr {
+      font-weight: 700;
+      font-size: .77rem;
+      text-align: center;
+      color: var(--muted)
+    }
+
+    .lbr.g1 {
+      color: #b8860b;
+      font-size: .9rem
+    }
+
+    .lbr.g2 {
+      color: #888;
+      font-size: .9rem
+    }
+
+    .lbr.g3 {
+      color: #9a6030;
+      font-size: .9rem
+    }
+
+    .lbn {
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      min-width: 0
+    }
+
+    .lbn .oc {
+      font-size: .56rem;
+      color: var(--blue);
+      background: var(--blue-l);
+      border-radius: 3px;
+      padding: 1px 4px;
+      white-space: nowrap
+    }
+
+    .lbw {
+      color: var(--green);
+      font-weight: 700;
+      text-align: center
+    }
+
+    .lbl {
+      color: var(--red);
+      font-weight: 700;
+      text-align: center
+    }
+
+    .lbt {
+      color: var(--muted);
+      text-align: center;
+      font-size: .78rem
+    }
+
+    .lbwr {
+      text-align: center;
+      font-size: .8rem;
+      font-weight: 700
+    }
 
     /* ── History ── */
-    .hist-list { display:flex; flex-direction:column; gap:5px; max-height:50vh; overflow-y:auto; -webkit-overflow-scrolling:touch }
-    .hi { background:#fafafa; border:1px solid #e8e8e8; border-radius:8px; padding:.52rem .88rem; font-size:.82rem }
-    .hi-head { display:flex; justify-content:space-between; margin-bottom:4px; gap:6px }
-    .hi-court { font-weight:700; color:var(--blue); white-space:nowrap }
-    .hi-time { color:var(--muted); font-size:.65rem; text-align:right }
-    .hi-match { display:flex; align-items:center; gap:6px; flex-wrap:wrap }
-    .hi-team { display:flex; gap:4px; flex-wrap:wrap }
-    .hi-nm { background:#fff; border:1px solid #ddd; border-radius:4px; padding:2px 7px; font-weight:500 }
-    .hi-win { background:var(--green-l); border-color:#aad6b4; color:var(--green); font-weight:700 }
-    .hi-vs { color:var(--muted); font-size:.68rem; font-weight:700 }
-    .hi-res { font-size:.68rem; color:var(--muted); margin-left:auto; white-space:nowrap }
+    .hist-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      max-height: 50vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch
+    }
+
+    .hi {
+      background: #fafafa;
+      border: 1px solid #e8e8e8;
+      border-radius: 8px;
+      padding: .52rem .88rem;
+      font-size: .82rem
+    }
+
+    .hi-head {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+      gap: 6px
+    }
+
+    .hi-court {
+      font-weight: 700;
+      color: var(--blue);
+      white-space: nowrap
+    }
+
+    .hi-time {
+      color: var(--muted);
+      font-size: .65rem;
+      text-align: right
+    }
+
+    .hi-match {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap
+    }
+
+    .hi-team {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap
+    }
+
+    .hi-nm {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 2px 7px;
+      font-weight: 500
+    }
+
+    .hi-win {
+      background: var(--green-l);
+      border-color: #aad6b4;
+      color: var(--green);
+      font-weight: 700
+    }
+
+    .hi-vs {
+      color: var(--muted);
+      font-size: .68rem;
+      font-weight: 700
+    }
+
+    .hi-res {
+      font-size: .68rem;
+      color: var(--muted);
+      margin-left: auto;
+      white-space: nowrap
+    }
 
     /* ── Toast ── */
     .notif {
-      position:fixed; bottom:calc(1.2rem + env(safe-area-inset-bottom)); left:50%;
-      transform:translateX(-50%) translateY(80px);
-      background:#1a2a1c; color:#fff; padding:.55rem 1.1rem;
-      border-radius:9px; font-size:.85rem; font-weight:600; z-index:999;
-      transition:transform .28s; white-space:nowrap;
-      box-shadow:0 4px 14px rgba(0,0,0,.28); max-width:90vw; text-align:center;
+      position: fixed;
+      bottom: calc(1.2rem + env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1a2a1c;
+      color: #fff;
+      padding: .55rem 1.1rem;
+      border-radius: 9px;
+      font-size: .85rem;
+      font-weight: 600;
+      z-index: 999;
+      transition: transform .28s;
+      white-space: nowrap;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, .28);
+      max-width: 90vw;
+      text-align: center;
     }
-    .notif.show { transform:translateX(-50%) translateY(0) }
 
-    .empty { color:var(--muted); font-size:.83rem; text-align:center; padding:1.3rem }
+    .notif.show {
+      transform: translateX(-50%) translateY(0)
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: .83rem;
+      text-align: center;
+      padding: 1.3rem
+    }
 
     /* ── 桌機：≥ 600px ── */
     @media(min-width:600px) {
-      .wrap { padding:1.1rem .9rem; gap:1.1rem }
-      .reg-row { flex-direction:row }
-      .ni { min-width:130px }
-      .add-btn { width:auto }
-      .courts-grid { grid-template-columns:repeat(auto-fill,minmax(240px,1fr)) }
+      .wrap {
+        padding: 1.1rem .9rem;
+        gap: 1.1rem
+      }
+
+      .reg-row {
+        flex-direction: row
+      }
+
+      .ni {
+        min-width: 130px
+      }
+
+      .add-btn {
+        width: auto
+      }
+
+      .courts-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr))
+      }
+
       /* 排行榜恢復 6 欄並顯示場數 */
-      .lb-hd, .lb-row { grid-template-columns:30px 1fr 50px 50px 52px 56px }
-      .lb-hd > *:nth-child(5), .lb-row > *:nth-child(5) { display:block }
-      .hist-list { max-height:320px }
-      .hdr-btn-print { display:inline-flex; align-items:center }
-      .btn-wa, .btn-wb { font-size:.73rem }
+      .lb-hd,
+      .lb-row {
+        grid-template-columns: 30px 1fr 50px 50px 52px 56px
+      }
+
+      .lb-hd>*:nth-child(5),
+      .lb-row>*:nth-child(5) {
+        display: block
+      }
+
+      .hist-list {
+        max-height: 320px
+      }
+
+      .hdr-btn-print {
+        display: inline-flex;
+        align-items: center
+      }
+
+      .btn-wa,
+      .btn-wb {
+        font-size: .73rem
+      }
     }
 
     /* ── Print ── */
     @media print {
-      header, .act-row, #preview-card, .hist-list, .card:not(#lb-card) { display:none !important }
-      body { background:#fff }
-      #lb-card { border:none; box-shadow:none }
-      .lb-print-title { display:block !important }
-      .lb-hd, .lb-row { grid-template-columns:30px 1fr 50px 50px 52px 56px }
-      .lb-hd > *:nth-child(5), .lb-row > *:nth-child(5) { display:block }
+
+      header,
+      .act-row,
+      #preview-card,
+      .hist-list,
+      .card:not(#lb-card) {
+        display: none !important
+      }
+
+      body {
+        background: #fff
+      }
+
+      #lb-card {
+        border: none;
+        box-shadow: none
+      }
+
+      .lb-print-title {
+        display: block !important
+      }
+
+      .lb-hd,
+      .lb-row {
+        grid-template-columns: 30px 1fr 50px 50px 52px 56px
+      }
+
+      .lb-hd>*:nth-child(5),
+      .lb-row>*:nth-child(5) {
+        display: block
+      }
     }
 
-    .lb-print-title { display:none; font-size:1.1rem; font-weight:900; text-align:center; margin-bottom:.6rem; letter-spacing:.05em }
+    .lb-print-title {
+      display: none;
+      font-size: 1.1rem;
+      font-weight: 900;
+      text-align: center;
+      margin-bottom: .6rem;
+      letter-spacing: .05em
+    }
   </style>
 </head>
 
@@ -236,7 +915,13 @@
       <div class="logo-sub">報隊配對系統</div>
     </div>
     <div class="hdr-right">
-      <span id="session-badge" style="font-size:.7rem;color:rgba(255,255,255,.6);background:rgba(255,255,255,.1);border-radius:6px;padding:3px 9px;white-space:nowrap"></span>
+      <span id="session-badge"
+        style="font-size:.7rem;color:rgba(255,255,255,.6);background:rgba(255,255,255,.1);border-radius:6px;padding:3px 9px;white-space:nowrap"></span>
+      <div class="court-box">
+        <label>模式</label>
+        <button id="mode-btn" onclick="toggleMode()"
+          style="background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.35);border-radius:6px;color:#fff;font-size:.82rem;font-weight:700;padding:3px 10px;cursor:pointer;min-height:28px">雙打</button>
+      </div>
       <div class="court-box">
         <label>場地數</label>
         <input type="number" id="court-count" min="1" max="10" value="2">
@@ -329,15 +1014,19 @@
   <div class="notif" id="notif"></div>
 
   <!-- 管理員設定 Modal（點 logo 5 下觸發，一般使用者看不到） -->
-  <div id="admin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center">
-    <div style="background:#fff;border-radius:14px;padding:1.4rem 1.5rem;width:min(92vw,420px);box-shadow:0 8px 32px rgba(0,0,0,.25)">
+  <div id="admin-modal"
+    style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center">
+    <div
+      style="background:#fff;border-radius:14px;padding:1.4rem 1.5rem;width:min(92vw,420px);box-shadow:0 8px 32px rgba(0,0,0,.25)">
       <div style="font-weight:900;font-size:1rem;margin-bottom:.9rem;color:#1a2a1c">🔐 管理員設定</div>
 
       <div id="admin-setup-view">
-        <label style="font-size:.8rem;font-weight:700;color:#556;display:block;margin-bottom:3px">GitHub Token（ghp_ 開頭）</label>
+        <label style="font-size:.8rem;font-weight:700;color:#556;display:block;margin-bottom:3px">GitHub Token（ghp_
+          開頭）</label>
         <input id="adm-token" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
           style="width:100%;border:1.5px solid #cde;border-radius:8px;padding:.5rem .75rem;font-size:.88rem;margin-bottom:.75rem;outline:none;font-family:inherit">
-        <label style="font-size:.8rem;font-weight:700;color:#556;display:block;margin-bottom:3px">設定推送密碼（之後按「推送 GitHub」時輸入）</label>
+        <label style="font-size:.8rem;font-weight:700;color:#556;display:block;margin-bottom:3px">設定推送密碼（之後按「推送
+          GitHub」時輸入）</label>
         <input id="adm-pw" type="password" placeholder="設定你的推送密碼"
           style="width:100%;border:1.5px solid #cde;border-radius:8px;padding:.5rem .75rem;font-size:.88rem;margin-bottom:1rem;outline:none;font-family:inherit">
         <div style="font-size:.7rem;color:#888;margin-bottom:.9rem">Token 以密碼加密後存於此裝置 localStorage，原始碼看不到明文。</div>
@@ -352,8 +1041,10 @@
   </div>
 
   <!-- 推送密碼輸入 Modal -->
-  <div id="pw-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
-    <div style="background:#fff;border-radius:14px;padding:1.3rem 1.4rem;width:min(88vw,360px);box-shadow:0 8px 28px rgba(0,0,0,.22)">
+  <div id="pw-modal"
+    style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
+    <div
+      style="background:#fff;border-radius:14px;padding:1.3rem 1.4rem;width:min(88vw,360px);box-shadow:0 8px 28px rgba(0,0,0,.22)">
       <div style="font-weight:800;font-size:.95rem;margin-bottom:.8rem;color:#1a2a1c">☁️ 輸入推送密碼</div>
       <input id="push-pw" type="password" placeholder="推送密碼"
         style="width:100%;border:1.5px solid #cde;border-radius:8px;padding:.55rem .8rem;font-size:1rem;margin-bottom:.9rem;outline:none;font-family:inherit"
@@ -380,6 +1071,7 @@
     // ═══════════════════════════════════════════════════════
     let players = [], courts = [], history = [], preview = [], nextId = 1
     let sessionId = '', sessionStart = ''
+    let gameMode = 'doubles' // 'doubles' | 'singles'
 
     const uid = () => nextId++
     const now = () => new Date()
@@ -398,8 +1090,8 @@
     function genId() {
       const d = new Date()
       const pad = n => String(n).padStart(2, '0')
-      const date = `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`
-      const rand = Math.random().toString(36).slice(2,6).toUpperCase()
+      const date = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`
+      const rand = Math.random().toString(36).slice(2, 6).toUpperCase()
       return `${date}-${rand}`
     }
 
@@ -416,10 +1108,12 @@
 
     function saveState() {
       try {
-        const snapshot = { players, courts, history, nextId, sessionId, sessionStart,
-                           courtCount: document.getElementById('court-count').value }
+        const snapshot = {
+          players, courts, history, nextId, sessionId, sessionStart,
+          courtCount: document.getElementById('court-count').value, gameMode
+        }
         localStorage.setItem('pb_state', JSON.stringify(snapshot, dateReplacer))
-      } catch(e) { console.warn('saveState failed', e) }
+      } catch (e) { console.warn('saveState failed', e) }
     }
 
     function loadState() {
@@ -428,22 +1122,23 @@
         if (!raw) return false
         const s = JSON.parse(raw, dateReviver)
         players = s.players || []
-        courts  = s.courts  || []
+        courts = s.courts || []
         history = s.history || []
-        nextId  = s.nextId  || 1
-        sessionId    = s.sessionId    || genId()
+        nextId = s.nextId || 1
+        sessionId = s.sessionId || genId()
         sessionStart = s.sessionStart || fmtF(now())
         if (s.courtCount) document.getElementById('court-count').value = s.courtCount
+        if (s.gameMode) { gameMode = s.gameMode; document.getElementById('mode-btn').textContent = gameMode === 'singles' ? '單打' : '雙打' }
         return players.length > 0 || history.length > 0
-      } catch(e) { return false }
+      } catch (e) { return false }
     }
 
     function newSession() {
       if ((players.length > 0 || history.length > 0) &&
-          !confirm('確定要開始新比賽？目前記錄將清除（可先匯出 CSV）')) return
+        !confirm('確定要開始新比賽？目前記錄將清除（可先匯出 CSV）')) return
       localStorage.removeItem('pb_state')
       players = []; courts = []; history = []; preview = []; nextId = 1
-      sessionId    = genId()
+      sessionId = genId()
       sessionStart = fmtF(now())
       saveState()
       updateSessionBadge()
@@ -526,6 +1221,17 @@
     // saveState 也在 addPlayer / loadCSV 結尾呼叫，由 renderAll 統一處理
 
     // ═══════════════════════════════════════════════════════
+    //  MODE TOGGLE
+    // ═══════════════════════════════════════════════════════
+    function toggleMode() {
+      if (courts.length > 0) { toast('有場地進行中，無法切換模式'); return }
+      gameMode = gameMode === 'doubles' ? 'singles' : 'doubles'
+      document.getElementById('mode-btn').textContent = gameMode === 'singles' ? '單打' : '雙打'
+      preview = []; renderAll()
+      toast(gameMode === 'doubles' ? '🔀 切換為雙打模式（2v2）' : '👤 切換為單打模式（1v1）')
+    }
+
+    // ═══════════════════════════════════════════════════════
     //  SHUFFLE ALGORITHM
     // ═══════════════════════════════════════════════════════
     function rnd(arr) {
@@ -566,30 +1272,27 @@
       const onCourtIds = new Set(courts.flatMap(c => [...c.teamA, ...c.teamB].map(p => p.id)))
       const waiting = players.filter(p => !onCourtIds.has(p.id))
       const slots = maxCourts - courts.length
+      const grpSz = gameMode === 'singles' ? 2 : 4
 
       if (slots <= 0) { toast('場地已滿'); return }
-      if (waiting.length < 4) { toast('等待人數不足（需至少 4 人）'); return }
+      if (waiting.length < grpSz) { toast(`等待人數不足（需至少 ${grpSz} 人）`); return }
 
       // ── Priority pools ──────────────────────────────────
-      // new > win > lose;  within each zone: fewest matchCount first
       const byMatches = arr => [...arr].sort((a, b) => a.matchCount - b.matchCount)
 
       const poolNew = byMatches(waiting.filter(p => p.zone === 'new'))
       const poolWin = byMatches(waiting.filter(p => p.zone === 'win'))
       const poolLose = byMatches(waiting.filter(p => p.zone === 'lose'))
 
-      // Drain each pool into groups of 4, collecting leftovers
       const groups = []
       function drainPool(pool) {
-        while (pool.length >= 4) groups.push(pool.splice(0, 4))
-        return pool // leftover
+        while (pool.length >= grpSz) groups.push(pool.splice(0, grpSz))
+        return pool
       }
 
       const leftNew = drainPool(poolNew)
       const leftWin = drainPool(poolWin)
       const leftLose = drainPool(poolLose)
-
-      // Cross-zone: new leftovers first, then win, then lose
       const cross = byMatches([...leftNew, ...leftWin, ...leftLose])
       drainPool(cross)
 
@@ -602,12 +1305,20 @@
       for (const grp of groups) {
         if (newPreview.length >= slots) break
         if (grp.some(p => usedIds.has(p.id))) continue
-        const { teamA, teamB, score } = bestSplit(grp)
-        newPreview.push({ courtNum: nextNum(), teamA, teamB, score })
+        let match
+        if (gameMode === 'singles') {
+          const [a, b] = grp
+          const score = (a.opponents.includes(b.id) ? 1 : 0) + (b.opponents.includes(a.id) ? 1 : 0)
+          match = { courtNum: nextNum(), teamA: [a], teamB: [b], score }
+        } else {
+          const { teamA, teamB, score } = bestSplit(grp)
+          match = { courtNum: nextNum(), teamA, teamB, score }
+        }
+        newPreview.push(match)
         grp.forEach(p => usedIds.add(p.id))
       }
 
-      if (!newPreview.length) { toast('無法組成完整對戰（等待人數需為 4 的倍數）'); return }
+      if (!newPreview.length) { toast(`無法組成完整對戰（等待人數需為 ${grpSz} 的倍數）`); return }
       preview = newPreview; renderAll(); toast(`🎯 已產生 ${newPreview.length} 場預覽，確認後釋出`)
     }
 
@@ -662,7 +1373,8 @@
       const max = Math.min(10, parseInt(document.getElementById('court-count').value) || 2)
       const onCourtIds = new Set(courts.flatMap(c => [...c.teamA, ...c.teamB].map(p => p.id)))
       const waiting = players.filter(p => !onCourtIds.has(p.id))
-      document.getElementById('btn-shuffle').disabled = waiting.length < 4 || (max - courts.length) <= 0
+      const grpSz = gameMode === 'singles' ? 2 : 4
+      document.getElementById('btn-shuffle').disabled = waiting.length < grpSz || (max - courts.length) <= 0
       document.getElementById('btn-release').disabled = preview.length === 0
     }
 
@@ -789,7 +1501,7 @@
     // ═══════════════════════════════════════════════════════
     //  GITHUB 設定（硬碼，使用者看不到）
     // ═══════════════════════════════════════════════════════
-    const GH_REPO   = 'shinhuahlee/python_winner'
+    const GH_REPO = 'shinhuahlee/python_winner'
     const GH_BRANCH = 'main'
     const GH_FOLDER = '匹克球/tournaments/'
 
@@ -808,9 +1520,9 @@
     async function encryptToken(token, password) {
       const enc = new TextEncoder()
       const salt = crypto.getRandomValues(new Uint8Array(16))
-      const iv   = crypto.getRandomValues(new Uint8Array(12))
-      const key  = await deriveKey(password, salt)
-      const ct   = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(token))
+      const iv = crypto.getRandomValues(new Uint8Array(12))
+      const key = await deriveKey(password, salt)
+      const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(token))
       // 組合 salt(16) + iv(12) + ciphertext → base64
       const buf = new Uint8Array(16 + 12 + ct.byteLength)
       buf.set(salt, 0); buf.set(iv, 16); buf.set(new Uint8Array(ct), 28)
@@ -818,12 +1530,12 @@
     }
 
     async function decryptToken(b64, password) {
-      const buf  = Uint8Array.from(atob(b64), c => c.charCodeAt(0))
+      const buf = Uint8Array.from(atob(b64), c => c.charCodeAt(0))
       const salt = buf.slice(0, 16)
-      const iv   = buf.slice(16, 28)
-      const ct   = buf.slice(28)
-      const key  = await deriveKey(password, salt)
-      const pt   = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct)
+      const iv = buf.slice(16, 28)
+      const ct = buf.slice(28)
+      const key = await deriveKey(password, salt)
+      const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct)
       return new TextDecoder().decode(pt)
     }
 
@@ -843,7 +1555,7 @@
 
     async function adminSave() {
       const token = document.getElementById('adm-token').value.trim()
-      const pw    = document.getElementById('adm-pw').value
+      const pw = document.getElementById('adm-pw').value
       if (!token || !pw) { alert('Token 和密碼都必須填寫'); return }
       if (!token.startsWith('ghp_') && !token.startsWith('github_pat_')) {
         if (!confirm('Token 格式看起來不對，確定要儲存？')) return
@@ -872,7 +1584,7 @@
     }
 
     async function confirmPush() {
-      const pw  = document.getElementById('push-pw').value
+      const pw = document.getElementById('push-pw').value
       const enc = localStorage.getItem('pb_token_enc')
       const errEl = document.getElementById('pw-err')
       let token
@@ -894,8 +1606,8 @@
       try {
         const csvContent = buildCSVContent()
         const filePath = GH_FOLDER + `pickleball_${sessionId}.csv`
-        const apiUrl   = `https://api.github.com/repos/${GH_REPO}/contents/${filePath}`
-        const headers  = { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' }
+        const apiUrl = `https://api.github.com/repos/${GH_REPO}/contents/${filePath}`
+        const headers = { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' }
 
         let sha = null
         const getRes = await fetch(apiUrl, { headers })
@@ -904,7 +1616,7 @@
         const body = {
           message: `比賽記錄 ${sessionId}`,
           content: btoa(unescape(encodeURIComponent(csvContent))),
-          branch:  GH_BRANCH,
+          branch: GH_BRANCH,
         }
         if (sha) body.sha = sha
 
@@ -936,24 +1648,24 @@
       rows.push([])
       rows.push(['─── 比賽歷史記錄 ───'])
       rows.push(['場次', '場地', '隊A選手1', '隊A選手2', '隊B選手1', '隊B選手2', '勝隊', '開始時間', '結束時間'])
-      ;[...history].reverse().forEach((h, i) => {
-        const wLabel = h.winner === 'A' ? h.teamA.map(p => p.name).join('+')
-          : h.winner === 'B' ? h.teamB.map(p => p.name).join('+') : '—'
-        rows.push([i + 1, h.courtNum,
+        ;[...history].reverse().forEach((h, i) => {
+          const wLabel = h.winner === 'A' ? h.teamA.map(p => p.name).join('+')
+            : h.winner === 'B' ? h.teamB.map(p => p.name).join('+') : '—'
+          rows.push([i + 1, h.courtNum,
           h.teamA[0]?.name || '', h.teamA[1]?.name || '',
           h.teamB[0]?.name || '', h.teamB[1]?.name || '',
-          wLabel,
+            wLabel,
           h.startTime ? fmtF(h.startTime) : '',
           h.endTime ? fmtF(h.endTime) : ''])
-      })
+        })
       if (courts.length) {
         rows.push([])
         rows.push(['─── 進行中（尚未結束）───'])
         rows.push(['場地', '隊A選手1', '隊A選手2', '隊B選手1', '隊B選手2', '開始時間'])
         courts.forEach(c => rows.push([c.courtNum,
-          c.teamA[0]?.name || '', c.teamA[1]?.name || '',
-          c.teamB[0]?.name || '', c.teamB[1]?.name || '',
-          c.startTime ? fmtF(c.startTime) : '']))
+        c.teamA[0]?.name || '', c.teamA[1]?.name || '',
+        c.teamB[0]?.name || '', c.teamB[1]?.name || '',
+        c.startTime ? fmtF(c.startTime) : '']))
       }
       return '﻿' + rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\r\n')
     }
@@ -961,7 +1673,7 @@
     // ── 初始化：嘗試還原上次記錄 ──────────────────────────────────
     const restored = loadState()
     if (!restored) {
-      sessionId    = genId()
+      sessionId = genId()
       sessionStart = fmtF(now())
     }
     renderAll()
