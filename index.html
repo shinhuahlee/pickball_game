@@ -360,6 +360,40 @@
       color: #8a6010
     }
 
+    .tag-pin {
+      background: #fdeec0;
+      color: #8a6010
+    }
+
+    .tag-pause {
+      background: #eee;
+      color: #888
+    }
+
+    .chip-excluded {
+      opacity: .55;
+      filter: grayscale(.5)
+    }
+
+    .chip-pin, .chip-pause {
+      background: none;
+      border: none;
+      color: #90ba98;
+      font-size: .85rem;
+      padding: 2px 0 2px 2px;
+      line-height: 1;
+      min-width: 22px;
+      min-height: 22px
+    }
+
+    .chip-pin.active {
+      color: var(--yellow)
+    }
+
+    .chip-pause.active {
+      color: var(--red)
+    }
+
     /* ── Action buttons ── */
     .act-row {
       display: flex;
@@ -1064,7 +1098,8 @@
     //  STATE
     //  player: { id, name, joinTime, zone:'new'|'win'|'lose',
     //            matchCount, wins, losses,
-    //            teammates:[id], opponents:[id] }
+    //            teammates:[id], opponents:[id],
+    //            pinned:bool (指定優先上場), excluded:bool (暫停上場) }
     //  court:  { id, courtNum, teamA:[p,p], teamB:[p,p], startTime }
     //  hist:   { ...court, endTime, winner:'A'|'B'|null }
     //  preview:[ { courtNum, teamA:[p,p], teamB:[p,p], score } ]
@@ -1124,6 +1159,7 @@
         if (!raw) return false
         const s = JSON.parse(raw, dateReviver)
         players = s.players || []
+        players.forEach(p => { if (p.pinned === undefined) p.pinned = false; if (p.excluded === undefined) p.excluded = false })
         courts = s.courts || []
         history = s.history || []
         nextId = s.nextId || 1
@@ -1174,7 +1210,8 @@
         if (players.find(p => p.name === name)) { dups.push(name); return }
         players.push({
           id: uid(), name, joinTime: now(), zone: 'new',
-          matchCount: 0, wins: 0, losses: 0, teammates: [], opponents: []
+          matchCount: 0, wins: 0, losses: 0, teammates: [], opponents: [],
+          pinned: false, excluded: false
         })
         added++
       })
@@ -1207,7 +1244,7 @@
           let added = 0, dups = 0
           names.forEach(name => {
             if (players.find(p => p.name === name)) { dups++; return }
-            players.push({ id: uid(), name, joinTime: now(), zone: 'new', matchCount: 0, wins: 0, losses: 0, teammates: [], opponents: [] })
+            players.push({ id: uid(), name, joinTime: now(), zone: 'new', matchCount: 0, wins: 0, losses: 0, teammates: [], opponents: [], pinned: false, excluded: false })
             added++
           })
           preview = []; renderAll()
@@ -1269,44 +1306,51 @@
       return rnd(opts.filter(o => o.score === minScore))[0]
     }
 
+    function togglePin(id) {
+      const p = players.find(p => p.id === id); if (!p) return
+      p.pinned = !p.pinned
+      if (p.pinned) p.excluded = false
+      renderAll()
+      toast(p.pinned ? `📌 ${p.name} 指定優先上場` : `已取消指定 ${p.name}`)
+    }
+
+    function toggleExclude(id) {
+      const p = players.find(p => p.id === id); if (!p) return
+      p.excluded = !p.excluded
+      if (p.excluded) p.pinned = false
+      renderAll()
+      toast(p.excluded ? `⏸ ${p.name} 暫停上場` : `▶ ${p.name} 恢復上場`)
+    }
+
     function doShuffle() {
       const maxCourts = Math.min(10, parseInt(document.getElementById('court-count').value) || 2)
       const onCourtIds = new Set(courts.flatMap(c => [...c.teamA, ...c.teamB].map(p => p.id)))
-      const waiting = players.filter(p => !onCourtIds.has(p.id))
+      const waiting = players.filter(p => !onCourtIds.has(p.id) && !p.excluded)
       const slots = maxCourts - courts.length
       const grpSz = gameMode === 'singles' ? 2 : 4
 
       if (slots <= 0) { toast('場地已滿'); return }
-      if (waiting.length < grpSz) { toast(`等待人數不足（需至少 ${grpSz} 人）`); return }
+      if (waiting.length < grpSz) { toast(`可上場人數不足（需至少 ${grpSz} 人，暫停者不計入）`); return }
 
-      // ── Priority pools ──────────────────────────────────
-      const byMatches = arr => [...arr].sort((a, b) => a.matchCount - b.matchCount)
+      // ── 公平排序：指定優先者最優先，其餘依「上場次數」由少到多排列
+      //    （次數相同者隨機排序，避免同一人總是墊底，永遠上不了場）
+      const active = rnd(waiting)
+        .sort((a, b) => {
+          const pa = a.pinned ? 0 : 1, pb = b.pinned ? 0 : 1
+          if (pa !== pb) return pa - pb
+          return a.matchCount - b.matchCount
+        })
+        .slice(0, Math.min(slots * grpSz, Math.floor(waiting.length / grpSz) * grpSz))
 
-      const poolNew = byMatches(waiting.filter(p => p.zone === 'new'))
-      const poolWin = byMatches(waiting.filter(p => p.zone === 'win'))
-      const poolLose = byMatches(waiting.filter(p => p.zone === 'lose'))
-
-      const groups = []
-      function drainPool(pool) {
-        while (pool.length >= grpSz) groups.push(pool.splice(0, grpSz))
-        return pool
-      }
-
-      const leftNew = drainPool(poolNew)
-      const leftWin = drainPool(poolWin)
-      const leftLose = drainPool(poolLose)
-      const cross = byMatches([...leftNew, ...leftWin, ...leftLose])
-      drainPool(cross)
+      if (active.length < grpSz) { toast(`無法組成完整對戰（等待人數需為 ${grpSz} 的倍數）`); return }
 
       // ── Assign groups to courts (up to slots) ───────────
       const newPreview = []
       const usedNums = new Set(courts.map(c => c.courtNum))
       const nextNum = () => { let n = 1; while (usedNums.has(n)) n++; usedNums.add(n); return n }
-      const usedIds = new Set()
 
-      for (const grp of groups) {
-        if (newPreview.length >= slots) break
-        if (grp.some(p => usedIds.has(p.id))) continue
+      for (let i = 0; i < active.length; i += grpSz) {
+        const grp = active.slice(i, i + grpSz)
         let match
         if (gameMode === 'singles') {
           const [a, b] = grp
@@ -1317,10 +1361,11 @@
           match = { courtNum: nextNum(), teamA, teamB, score }
         }
         newPreview.push(match)
-        grp.forEach(p => usedIds.add(p.id))
       }
 
-      if (!newPreview.length) { toast(`無法組成完整對戰（等待人數需為 ${grpSz} 的倍數）`); return }
+      // 指定優先旗標只生效一次，配對完即清除
+      active.forEach(p => { p.pinned = false })
+
       preview = newPreview; renderAll(); toast(`🎯 已產生 ${newPreview.length} 場預覽，確認後釋出`)
     }
 
@@ -1374,7 +1419,7 @@
     function updateBtns() {
       const max = Math.min(10, parseInt(document.getElementById('court-count').value) || 2)
       const onCourtIds = new Set(courts.flatMap(c => [...c.teamA, ...c.teamB].map(p => p.id)))
-      const waiting = players.filter(p => !onCourtIds.has(p.id))
+      const waiting = players.filter(p => !onCourtIds.has(p.id) && !p.excluded)
       const grpSz = gameMode === 'singles' ? 2 : 4
       document.getElementById('btn-shuffle').disabled = waiting.length < grpSz || (max - courts.length) <= 0
       document.getElementById('btn-release').disabled = preview.length === 0
@@ -1383,24 +1428,33 @@
     function renderChips() {
       const onCourtIds = new Set(courts.flatMap(c => [...c.teamA, ...c.teamB].map(p => p.id)))
       const previewIds = new Set(preview.flatMap(m => [...m.teamA, ...m.teamB].map(p => p.id)))
-      const waiting = players.filter(p => !onCourtIds.has(p.id)).length
+      const waitingPlayers = players.filter(p => !onCourtIds.has(p.id))
+      const restingCount = waitingPlayers.filter(p => p.excluded).length
       document.getElementById('pill-total').textContent = players.length + ' 人'
-      document.getElementById('pill-wait').textContent = '等待 ' + waiting
+      document.getElementById('pill-wait').textContent = '等待 ' + waitingPlayers.length + (restingCount ? `（暫停 ${restingCount}）` : '')
       const el = document.getElementById('chip-list')
       if (!players.length) { el.innerHTML = '<span style="color:var(--muted);font-size:.82rem">尚無人報名</span>'; return }
       const zoneBg = { new: 'var(--green)', win: 'var(--green)', lose: 'var(--red)' }
       const zoneLabel = { new: '新', win: '贏', lose: '輸' }
       el.innerHTML = players.map((p, i) => {
         const oc = onCourtIds.has(p.id), ip = previewIds.has(p.id)
-        const cls = oc ? 'chip chip-court' : ip ? 'chip chip-preview' : 'chip chip-wait'
+        const isWaiting = !oc && !ip
+        const cls = oc ? 'chip chip-court' : ip ? 'chip chip-preview' : (p.excluded ? 'chip chip-wait chip-excluded' : 'chip chip-wait')
         const rk_bg = oc ? '#7a8f9a' : ip ? '#c89020' : zoneBg[p.zone]
-        const tag = oc ? `<span class="chip-tag tag-court">上場中</span>` : ip ? `<span class="chip-tag tag-prev">預覽中</span>` : ''
+        let tag = oc ? `<span class="chip-tag tag-court">上場中</span>` : ip ? `<span class="chip-tag tag-prev">預覽中</span>` : ''
+        if (isWaiting && p.pinned) tag += `<span class="chip-tag tag-pin">📌指定</span>`
+        if (isWaiting && p.excluded) tag += `<span class="chip-tag tag-pause">暫停</span>`
+        const actionBtns = isWaiting
+          ? `<button class="chip-pin${p.pinned ? ' active' : ''}" onclick="togglePin(${p.id})" title="指定優先上場">📌</button>
+             <button class="chip-pause${p.excluded ? ' active' : ''}" onclick="toggleExclude(${p.id})" title="${p.excluded ? '恢復上場' : '暫停上場'}">${p.excluded ? '▶' : '⏸'}</button>
+             <button class="chip-del" onclick="removePlayer(${p.id})">✕</button>`
+          : ''
         return `<div class="${cls}">
       <span class="chip-rk" style="background:${rk_bg}">${i + 1}</span>
       ${p.name}
       <span style="font-size:.58rem;opacity:.65">${zoneLabel[p.zone] || ''}</span>
       ${tag}
-      ${!oc ? `<button class="chip-del" onclick="removePlayer(${p.id})">✕</button>` : ''}
+      ${actionBtns}
     </div>`
       }).join('')
     }
@@ -1420,7 +1474,7 @@
       <div class="prev-team">${m.teamB.map(p => `<span class="prev-nm">${p.name}</span>`).join('')}</div>
       <span class="prev-score" title="重複度：重複隊友(×2)+重複對手，越低越好">重複度 ${m.score}</span>
     </div>`).join('') +
-        (leftover.length ? `<div class="prev-left">等待下一輪：${leftover.map(p => p.name).join('、')}</div>` : '')
+        (leftover.length ? `<div class="prev-left">等待下一輪：${leftover.map(p => p.name + (p.excluded ? '（暫停）' : '')).join('、')}</div>` : '')
     }
 
     function renderCourts() {
