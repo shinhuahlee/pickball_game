@@ -1344,13 +1344,19 @@
 
       if (active.length < grpSz) { toast(`無法組成完整對戰（等待人數需為 ${grpSz} 的倍數）`); return }
 
+      // ── 實力分組：上面已經公平選出「這一輪誰能上場」，這一步只決定
+      //    這群人怎麼互相配對——盡量讓贏的跟贏的打、輸的跟輸的打（實力相當），
+      //    不會影響到上場資格，所以不會重新造成奇數落單的問題
+      const zoneRank = { win: 0, new: 1, lose: 2 }
+      const grouped = [...active].sort((a, b) => zoneRank[a.zone] - zoneRank[b.zone])
+
       // ── Assign groups to courts (up to slots) ───────────
       const newPreview = []
       const usedNums = new Set(courts.map(c => c.courtNum))
       const nextNum = () => { let n = 1; while (usedNums.has(n)) n++; usedNums.add(n); return n }
 
-      for (let i = 0; i < active.length; i += grpSz) {
-        const grp = active.slice(i, i + grpSz)
+      for (let i = 0; i < grouped.length; i += grpSz) {
+        const grp = grouped.slice(i, i + grpSz)
         let match
         if (gameMode === 'singles') {
           const [a, b] = grp
