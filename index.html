@@ -1280,15 +1280,17 @@
     }
 
     // Score one specific split of 4 players into teamA=[a,b] vs teamB=[c,d]
-    // Primary cost: teammate repeats (×2 weight)
-    // Secondary cost: opponent repeats (×1 weight)
+    // Primary cost: teammate repeat *count* (×2 weight) — repeating more times costs more,
+    // not just a one-off flag, so pairs that already teamed up a lot get pushed apart harder
+    // Secondary cost: opponent repeat count (×1 weight)
     // Lower = better
     function splitScore(a, b, c, d) {
-      const tmAB = (a.teammates.includes(b.id) ? 1 : 0) + (b.teammates.includes(a.id) ? 1 : 0)
-      const tmCD = (c.teammates.includes(d.id) ? 1 : 0) + (d.teammates.includes(c.id) ? 1 : 0)
+      const cnt = (arr, id) => arr.reduce((n, x) => x === id ? n + 1 : n, 0)
+      const tmAB = cnt(a.teammates, b.id)
+      const tmCD = cnt(c.teammates, d.id)
       let opRep = 0
       for (const x of [a, b]) for (const y of [c, d])
-        opRep += (x.opponents.includes(y.id) ? 1 : 0) + (y.opponents.includes(x.id) ? 1 : 0)
+        opRep += cnt(x.opponents, y.id)
       return (tmAB + tmCD) * 2 + opRep
     }
 
@@ -1346,21 +1348,77 @@
 
       // ── 實力分組：上面已經公平選出「這一輪誰能上場」，這一步只決定
       //    這群人怎麼互相配對——盡量讓贏的跟贏的打、輸的跟輸的打（實力相當），
-      //    不會影響到上場資格，所以不會重新造成奇數落單的問題
+      //    同時要避開最近配過的隊友／打過的對手。用「代價」而非硬性分區，
+      //    避免戰績分區剛好卡成整組時，同一批人被鎖死、隊友對手一直重複。
       const zoneRank = { win: 0, new: 1, lose: 2 }
-      const grouped = [...active].sort((a, b) => zoneRank[a.zone] - zoneRank[b.zone])
+      const countId = (arr, id) => arr.reduce((n, x) => x === id ? n + 1 : n, 0)
+      // 用「配過幾次」而非「配過沒」計費：配越多次代價越高，讓演算法優先
+      // 打散重複次數最多的組合，而不是配過一次之後就跟沒配過一樣沒差別
+      const pairCost = (a, b) => {
+        const zoneDist = Math.abs(zoneRank[a.zone] - zoneRank[b.zone])
+        const tmCount = countId(a.teammates, b.id)
+        const opCount = countId(a.opponents, b.id)
+        return zoneDist * 2 + tmCount * 6 + opCount * 3
+      }
+      const zoneCostOfGroup = four => {
+        let z = 0
+        for (let i = 0; i < four.length; i++) for (let j = i + 1; j < four.length; j++)
+          z += Math.abs(zoneRank[four[i].zone] - zoneRank[four[j].zone])
+        return z
+      }
+      const combos = (arr, k) => {
+        const result = []
+        const rec = (start, chosen) => {
+          if (chosen.length === k) { result.push(chosen.slice()); return }
+          for (let i = start; i < arr.length; i++) { chosen.push(arr[i]); rec(i + 1, chosen); chosen.pop() }
+        }
+        rec(0, [])
+        return result
+      }
+      // 每次先挑一個錨點，只從「跟錨點代價最低的候選人」裡挑一小組（避免全排列爆炸），
+      // 再實際套用 bestSplit 算出這幾種組合裡最佳隊型的重複度，選代價最低的一組——
+      // 比單純「錨點各自配最低代價的人」更準，因為也考慮了隊友之間彼此的重複史
+      function greedyGroup(pool, size) {
+        const remaining = [...pool]
+        const groups = []
+        const SHORTLIST = 8
+        while (remaining.length >= size) {
+          const anchor = remaining.shift()
+          if (size === 2) {
+            const best = remaining.map(c => ({ c, cost: pairCost(anchor, c) })).sort((x, y) => x.cost - y.cost)[0]
+            remaining.splice(remaining.indexOf(best.c), 1)
+            groups.push([anchor, best.c])
+            continue
+          }
+          const shortlist = remaining
+            .map(c => ({ c, cost: pairCost(anchor, c) }))
+            .sort((x, y) => x.cost - y.cost)
+            .slice(0, SHORTLIST)
+            .map(s => s.c)
+          let best = null, bestCost = Infinity
+          for (const combo of combos(shortlist, size - 1)) {
+            const four = [anchor, ...combo]
+            const cost = bestSplit(four).score * 3 + zoneCostOfGroup(four)
+            if (cost < bestCost) { bestCost = cost; best = combo }
+          }
+          if (!best) best = shortlist.slice(0, size - 1)
+          best.forEach(p => remaining.splice(remaining.indexOf(p), 1))
+          groups.push([anchor, ...best])
+        }
+        return groups
+      }
+      const groups = greedyGroup(active, grpSz)
 
       // ── Assign groups to courts (up to slots) ───────────
       const newPreview = []
       const usedNums = new Set(courts.map(c => c.courtNum))
       const nextNum = () => { let n = 1; while (usedNums.has(n)) n++; usedNums.add(n); return n }
 
-      for (let i = 0; i < grouped.length; i += grpSz) {
-        const grp = grouped.slice(i, i + grpSz)
+      for (const grp of groups) {
         let match
         if (gameMode === 'singles') {
           const [a, b] = grp
-          const score = (a.opponents.includes(b.id) ? 1 : 0) + (b.opponents.includes(a.id) ? 1 : 0)
+          const score = countId(a.opponents, b.id)
           match = { courtNum: nextNum(), teamA: [a], teamB: [b], score }
         } else {
           const { teamA, teamB, score } = bestSplit(grp)
@@ -1384,14 +1442,18 @@
         courts.push({ id: uid(), courtNum: m.courtNum, teamA: m.teamA, teamB: m.teamB, startTime: now() })
           // Increment match count
           ;[...m.teamA, ...m.teamB].forEach(p => p.matchCount++)
-        // Record teammates (bidirectional)
-        const addTM = (pa, pb) => { if (!pa.teammates.includes(pb.id)) pa.teammates.push(pb.id) }
-        m.teamA.forEach(p => m.teamA.forEach(q => { if (p.id !== q.id) { addTM(p, q); addTM(q, p) } }))
-        m.teamB.forEach(p => m.teamB.forEach(q => { if (p.id !== q.id) { addTM(p, q); addTM(q, p) } }))
-        // Record opponents (bidirectional)
+        // Record teammates (bidirectional, each pair once — used as a repeat *count*, not just a flag)
+        const recordTeam = team => {
+          for (let i = 0; i < team.length; i++) for (let j = i + 1; j < team.length; j++) {
+            team[i].teammates.push(team[j].id)
+            team[j].teammates.push(team[i].id)
+          }
+        }
+        recordTeam(m.teamA); recordTeam(m.teamB)
+        // Record opponents (bidirectional, each pair once)
         m.teamA.forEach(p => m.teamB.forEach(q => {
-          if (!p.opponents.includes(q.id)) p.opponents.push(q.id)
-          if (!q.opponents.includes(p.id)) q.opponents.push(p.id)
+          p.opponents.push(q.id)
+          q.opponents.push(p.id)
         }))
       })
       preview = []; renderAll(); toast(`▶ 已釋出 ${courts.length} 場！`)
