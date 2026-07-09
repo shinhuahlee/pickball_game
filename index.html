@@ -815,6 +815,28 @@
       white-space: nowrap
     }
 
+    .hi-edit {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px dashed #ddd
+    }
+
+    .hi-edit .btn-wa,
+    .hi-edit .btn-wb,
+    .hi-edit .btn-no {
+      min-height: 34px;
+      padding: .35rem .4rem;
+      font-size: .68rem;
+      opacity: .6
+    }
+
+    .hi-edit .hi-cur {
+      opacity: 1;
+      outline: 2px solid currentColor
+    }
+
     /* ── Toast ── */
     .notif {
       position: fixed;
@@ -1479,6 +1501,24 @@
       renderAll()
     }
 
+    // 修正最近一場的結果（按錯獲勝組別時用）。只開放修正最新一筆，
+    // 因為再往前的紀錄，選手的 zone 可能已經被更新的比賽覆蓋過，貿然回改會弄亂目前的分區狀態
+    function editResult(historyId, newWinner) {
+      const h = history[0]
+      if (!h || h.id !== historyId) { toast('只能修正最近一場的結果'); return }
+      if (h.winner === newWinner) return
+
+      if (h.winner === 'A') { h.teamA.forEach(p => p.wins--); h.teamB.forEach(p => p.losses--) }
+      else if (h.winner === 'B') { h.teamB.forEach(p => p.wins--); h.teamA.forEach(p => p.losses--) }
+
+      if (newWinner === 'A') { h.teamA.forEach(p => { p.wins++; p.zone = 'win' }); h.teamB.forEach(p => { p.losses++; p.zone = 'lose' }) }
+      else if (newWinner === 'B') { h.teamB.forEach(p => { p.wins++; p.zone = 'win' }); h.teamA.forEach(p => { p.losses++; p.zone = 'lose' }) }
+
+      h.winner = newWinner
+      renderAll()
+      toast('✅ 已修正比賽結果')
+    }
+
     // ═══════════════════════════════════════════════════════
     //  RENDER
     // ═══════════════════════════════════════════════════════
@@ -1605,7 +1645,7 @@
       const el = document.getElementById('hist-list')
       document.getElementById('pill-hist').textContent = history.length + ' 場'
       if (!history.length) { el.innerHTML = '<div class="empty">尚無記錄</div>'; return }
-      el.innerHTML = history.map(h => {
+      el.innerHTML = history.map((h, i) => {
         const wA = h.winner === 'A', wB = h.winner === 'B'
         return `<div class="hi">
       <div class="hi-head">
@@ -1618,6 +1658,11 @@
         <div class="hi-team">${h.teamB.map(p => `<span class="hi-nm${wB ? ' hi-win' : ''}">${p.name}</span>`).join('')}</div>
         <span class="hi-res">${h.winner ? '🏆 ' + (h.winner === 'A' ? h.teamA : h.teamB).map(p => p.name).join(' & ') : '—'}</span>
       </div>
+      ${i === 0 ? `<div class="hi-edit">
+        <button class="btn-wa${wA ? ' hi-cur' : ''}" onclick="editResult(${h.id},'A')">${h.teamA.map(p => p.name).join('&amp;')} 勝</button>
+        <button class="btn-wb${wB ? ' hi-cur' : ''}" onclick="editResult(${h.id},'B')">${h.teamB.map(p => p.name).join('&amp;')} 勝</button>
+        <button class="btn-no${!h.winner ? ' hi-cur' : ''}" onclick="editResult(${h.id},null)" title="不計分">✕</button>
+      </div>` : ''}
     </div>`
       }).join('')
     }
