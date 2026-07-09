@@ -644,7 +644,7 @@
 
     .lb-hd {
       display: grid;
-      grid-template-columns: 24px 1fr 36px 36px 46px;
+      grid-template-columns: 24px 1fr 36px 36px 46px 46px;
       gap: 3px;
       padding: 4px 8px;
       font-size: .67rem;
@@ -655,7 +655,7 @@
 
     .lb-row {
       display: grid;
-      grid-template-columns: 24px 1fr 36px 36px 46px;
+      grid-template-columns: 24px 1fr 36px 36px 46px 46px;
       gap: 3px;
       align-items: center;
       padding: 7px 8px;
@@ -735,6 +735,13 @@
       text-align: center;
       font-size: .8rem;
       font-weight: 700
+    }
+
+    .lbscore {
+      text-align: center;
+      font-size: .8rem;
+      font-weight: 700;
+      color: var(--blue)
     }
 
     /* ── History ── */
@@ -894,7 +901,7 @@
       /* 排行榜恢復 6 欄並顯示場數 */
       .lb-hd,
       .lb-row {
-        grid-template-columns: 30px 1fr 50px 50px 52px 56px
+        grid-template-columns: 30px 1fr 50px 50px 52px 56px 56px
       }
 
       .lb-hd>*:nth-child(5),
@@ -943,7 +950,7 @@
 
       .lb-hd,
       .lb-row {
-        grid-template-columns: 30px 1fr 50px 50px 52px 56px
+        grid-template-columns: 30px 1fr 50px 50px 52px 56px 56px
       }
 
       .lb-hd>*:nth-child(5),
@@ -1607,14 +1614,21 @@
   </div>`).join('')
     }
 
+    // Wilson score 信賴區間下界（95% 信心水準）：把「勝率」換算成「這個勝率有多可信」，
+    // 場次越少、樣本越不足，下界越會被往 50% 拉——避免打1場全勝的人排在打20場18勝的人前面
+    function wilsonScore(wins, n) {
+      if (n === 0) return 0
+      const z = 1.96, phat = wins / n, z2 = z * z
+      return (phat + z2 / (2 * n) - z * Math.sqrt((phat * (1 - phat) + z2 / (4 * n)) / n)) / (1 + z2 / n)
+    }
+
     function renderLeaderboard() {
       const el = document.getElementById('leaderboard')
       const onCourtIds = new Set(courts.flatMap(c => [...c.teamA, ...c.teamB].map(p => p.id)))
       const ranked = [...players].filter(p => p.matchCount > 0)
         .sort((a, b) => {
-          const rateA = a.wins / a.matchCount
-          const rateB = b.wins / b.matchCount
-          return rateB - rateA || b.wins - a.wins || b.matchCount - a.matchCount
+          const wa = wilsonScore(a.wins, a.matchCount), wb = wilsonScore(b.wins, b.matchCount)
+          return wb - wa || (b.wins / b.matchCount) - (a.wins / a.matchCount) || b.matchCount - a.matchCount
         })
       if (!ranked.length) { el.innerHTML = '<div class="empty">尚無積分紀錄</div>'; return }
       const sym = i => i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1)
@@ -1626,8 +1640,10 @@
     <span style="text-align:center">敗</span>
     <span style="text-align:center">場數</span>
     <span style="text-align:center">勝率</span>
+    <span style="text-align:center" title="Wilson score 信賴區間下界：綜合勝率與場次多寡的排名依據">積分</span>
   </div>`+ ranked.map((p, i) => {
         const rate = p.matchCount > 0 ? Math.round(p.wins / p.matchCount * 100) : 0
+        const score = Math.round(wilsonScore(p.wins, p.matchCount) * 100)
         const barColor = rate >= 50 ? 'var(--green)' : 'var(--red)'
         const oc = onCourtIds.has(p.id)
         return `<div class="lb-row">
@@ -1637,6 +1653,7 @@
       <span class="lbl">${p.losses}</span>
       <span class="lbt">${p.matchCount}</span>
       <span class="lbwr" style="color:${barColor}">${rate}%</span>
+      <span class="lbscore">${score}</span>
     </div>`
       }).join('')
     }
@@ -1807,12 +1824,16 @@
     function buildCSVContent() {
       const rows = [['比賽代號', sessionId], ['開始時間', sessionStart], ['匯出時間', fmtF(now())], []]
       rows.push(['─── 積分排行榜 ───'])
-      rows.push(['名次', '選手', '勝', '敗', '場數', '勝率'])
+      rows.push(['名次', '選手', '勝', '敗', '場數', '勝率', '積分'])
       const ranked = [...players].filter(p => p.matchCount > 0)
-        .sort((a, b) => (b.wins / b.matchCount) - (a.wins / a.matchCount) || b.wins - a.wins)
+        .sort((a, b) => {
+          const wa = wilsonScore(a.wins, a.matchCount), wb = wilsonScore(b.wins, b.matchCount)
+          return wb - wa || (b.wins / b.matchCount) - (a.wins / a.matchCount) || b.matchCount - a.matchCount
+        })
       ranked.forEach((p, i) => {
         const rate = p.matchCount ? Math.round(p.wins / p.matchCount * 100) : 0
-        rows.push([i + 1, p.name, p.wins, p.losses, p.matchCount, rate + '%'])
+        const score = Math.round(wilsonScore(p.wins, p.matchCount) * 100)
+        rows.push([i + 1, p.name, p.wins, p.losses, p.matchCount, rate + '%', score])
       })
       rows.push([])
       rows.push(['─── 比賽歷史記錄 ───'])
