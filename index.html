@@ -1188,7 +1188,12 @@
         if (!raw) return false
         const s = JSON.parse(raw, dateReviver)
         players = s.players || []
-        players.forEach(p => { if (p.pinned === undefined) p.pinned = false; if (p.excluded === undefined) p.excluded = false })
+        players.forEach(p => {
+          if (p.pinned === undefined) p.pinned = false
+          if (p.excluded === undefined) p.excluded = false
+          if (p.consecutivePlay === undefined) p.consecutivePlay = 0
+          if (p.consecutiveRest === undefined) p.consecutiveRest = 0
+        })
         courts = s.courts || []
         history = s.history || []
         nextId = s.nextId || 1
@@ -1240,7 +1245,7 @@
         players.push({
           id: uid(), name, joinTime: now(), zone: 'new',
           matchCount: 0, wins: 0, losses: 0, teammates: [], opponents: [],
-          pinned: false, excluded: false
+          pinned: false, excluded: false, consecutivePlay: 0, consecutiveRest: 0
         })
         added++
       })
@@ -1273,7 +1278,7 @@
           let added = 0, dups = 0
           names.forEach(name => {
             if (players.find(p => p.name === name)) { dups++; return }
-            players.push({ id: uid(), name, joinTime: now(), zone: 'new', matchCount: 0, wins: 0, losses: 0, teammates: [], opponents: [], pinned: false, excluded: false })
+            players.push({ id: uid(), name, joinTime: now(), zone: 'new', matchCount: 0, wins: 0, losses: 0, teammates: [], opponents: [], pinned: false, excluded: false, consecutivePlay: 0, consecutiveRest: 0 })
             added++
           })
           preview = []; renderAll()
@@ -1308,33 +1313,34 @@
       return a
     }
 
-    // Score one specific split of 4 players into teamA=[a,b] vs teamB=[c,d]
-    // Primary cost: teammate repeat *count* (×2 weight) — repeating more times costs more,
-    // not just a one-off flag, so pairs that already teamed up a lot get pushed apart harder
-    // Secondary cost: opponent repeat count (×1 weight)
-    // Lower = better
-    function splitScore(a, b, c, d) {
-      const cnt = (arr, id) => arr.reduce((n, x) => x === id ? n + 1 : n, 0)
-      const tmAB = cnt(a.teammates, b.id)
-      const tmCD = cnt(c.teammates, d.id)
-      let opRep = 0
-      for (const x of [a, b]) for (const y of [c, d])
-        opRep += cnt(x.opponents, y.id)
-      return (tmAB + tmCD) * 2 + opRep
+    // 累計勝率（沒打過的人視為中間值0.5），用完整歷史紀錄判斷實力，
+    // 而不是只看上一場輸贏——單場運氣不該左右分類
+    const winRate = p => p.matchCount > 0 ? p.wins / p.matchCount : 0.5
+    const countId = (arr, id) => arr.reduce((n, x) => x === id ? n + 1 : n, 0)
+
+    // 評估一種分法：teamA=[a,b] vs teamB=[c,d]
+    function splitOption(a, b, c, d) {
+      const tmCost = countId(a.teammates, b.id) + countId(c.teammates, d.id)
+      let opCost = 0
+      for (const x of [a, b]) for (const y of [c, d]) opCost += countId(x.opponents, y.id)
+      const balanceCost = Math.abs((winRate(a) + winRate(b)) - (winRate(c) + winRate(d)))
+      return { teamA: [a, b], teamB: [c, d], tmCost, opCost, balanceCost, score: tmCost * 2 + opCost }
     }
 
-    // There are exactly 3 distinct ways to split 4 players into 2 pairs:
-    // (01)(23)  (02)(13)  (03)(12)
+    // 4人恰好只有3種分法：(01)(23) (02)(13) (03)(12)。
+    // 依序比較：優先避免重複搭檔 → 其次避免重複對手 → 最後平衡兩隊總勝率
     function bestSplit(four) {
       const [a, b, c, d] = four
       const opts = [
-        { teamA: [a, b], teamB: [c, d], score: splitScore(a, b, c, d) },
-        { teamA: [a, c], teamB: [b, d], score: splitScore(a, c, b, d) },
-        { teamA: [a, d], teamB: [b, c], score: splitScore(a, d, b, c) },
+        splitOption(a, b, c, d),
+        splitOption(a, c, b, d),
+        splitOption(a, d, b, c),
       ]
-      const minScore = Math.min(...opts.map(o => o.score))
-      // Among tied options, pick randomly for fairness
-      return rnd(opts.filter(o => o.score === minScore))[0]
+      opts.sort((x, y) => x.tmCost - y.tmCost || x.opCost - y.opCost || x.balanceCost - y.balanceCost)
+      const best = opts[0]
+      const top = opts.filter(o => o.tmCost === best.tmCost && o.opCost === best.opCost && o.balanceCost === best.balanceCost)
+      // 完全同分的選項隨機挑，避免固定偏向同一種排列
+      return rnd(top)[0]
     }
 
     function togglePin(id) {
@@ -1349,6 +1355,7 @@
       const p = players.find(p => p.id === id); if (!p) return
       p.excluded = !p.excluded
       if (p.excluded) p.pinned = false
+      else { p.consecutivePlay = 0; p.consecutiveRest = 0 } // 暫停期間視同休息，恢復時重新起算連續場次
       renderAll()
       toast(p.excluded ? `⏸ ${p.name} 暫停上場` : `▶ ${p.name} 恢復上場`)
     }
@@ -1363,27 +1370,51 @@
       if (slots <= 0) { toast('場地已滿'); return }
       if (waiting.length < grpSz) { toast(`可上場人數不足（需至少 ${grpSz} 人，暫停者不計入）`); return }
 
-      // ── 公平排序：指定優先者最優先，其餘依「上場次數」由少到多排列
-      //    （次數相同者隨機排序，避免同一人總是墊底，永遠上不了場）
-      const active = rnd(waiting)
-        .sort((a, b) => {
-          const pa = a.pinned ? 0 : 1, pb = b.pinned ? 0 : 1
-          if (pa !== pb) return pa - pb
-          return a.matchCount - b.matchCount
-        })
-        .slice(0, Math.min(slots * grpSz, Math.floor(waiting.length / grpSz) * grpSz))
+      const maxCapacity = Math.min(slots * grpSz, Math.floor(waiting.length / grpSz) * grpSz)
+      if (maxCapacity < grpSz) { toast(`無法組成完整對戰（等待人數需為 ${grpSz} 的倍數）`); return }
 
-      if (active.length < grpSz) { toast(`無法組成完整對戰（等待人數需為 ${grpSz} 的倍數）`); return }
+      // ── 依「總人數 vs. 場地總容納量」決定這輪的輪休規則：
+      //    人數 < 容納量兩倍：人不夠讓大家每輪都休息，允許連續上場，
+      //      但原則上不得連續上場三輪（最多連兩場，第三輪強制休息）。
+      //    人數 ≥ 容納量兩倍：人手充足，上一輪有上場的這輪原則上全部
+      //      休息（嚴格輪替），同時也不得連續休息三輪，優先讓休最久、
+      //      場次最少的人（含新加入者）優先補上。
+      //    指定優先者不受這些限制，人工指定永遠可上場。
+      const totalCapacity = maxCourts * grpSz
+      const totalPeople = players.filter(p => !p.excluded).length
+      const lowPopulation = totalPeople < totalCapacity * 2
+
+      const pinnedPool = waiting.filter(p => p.pinned)
+      const eligiblePool = lowPopulation
+        ? waiting.filter(p => !p.pinned && (p.consecutivePlay || 0) < 2)
+        : waiting.filter(p => !p.pinned && (p.consecutivePlay || 0) === 0)
+
+      const usablePool = [...pinnedPool, ...eligiblePool]
+      const playCapacity = Math.min(maxCapacity, Math.floor(usablePool.length / grpSz) * grpSz)
+
+      if (playCapacity < grpSz) { toast('目前沒有足夠可輪替上場的人，請稍候下一輪'); return }
+      const restNote = playCapacity < maxCapacity ? '（依輪休制度限制，這輪少開一場）' : ''
+
+      // 排序：（高人數模式下）已連續休息2輪、再不排就會違反「不得連續休三輪」
+      //   的人最優先；其餘依「總上場次數」少者優先，次數相同時「已休息越久」
+      //   者優先，再相同則隨機，避免同一人總是墊底
+      const sortByFairness = arr => rnd(arr).sort((a, b) => {
+        if (!lowPopulation) {
+          const ma = (a.consecutiveRest || 0) >= 2 ? 0 : 1
+          const mb = (b.consecutiveRest || 0) >= 2 ? 0 : 1
+          if (ma !== mb) return ma - mb
+        }
+        if (a.matchCount !== b.matchCount) return a.matchCount - b.matchCount
+        return (b.consecutiveRest || 0) - (a.consecutiveRest || 0)
+      })
+
+      const active = [...pinnedPool, ...sortByFairness(eligiblePool)].slice(0, playCapacity)
 
       // ── 實力分組：上面已經公平選出「這一輪誰能上場」，這一步只決定
       //    這群人怎麼互相配對。直接依「累計勝率」由高到低排序，然後照名次
       //    切成一組一組（前面幾名一組、接下來幾名一組……），確保同一組內
       //    的人實力最接近。組內的隊友/對手搭配再交給 bestSplit，在這組固定
-      //    的人裡挑重複度最低的隊型（隊友優先不同，其次對手也不同）。
-      // 勝率沒打過的人視為中間值0.5，而不是只看上一場輸贏——上一場結果
-      // 雜訊很大（單場運氣就能左右分類），累計勝率用完整歷史紀錄判斷。
-      const winRate = p => p.matchCount > 0 ? p.wins / p.matchCount : 0.5
-      const countId = (arr, id) => arr.reduce((n, x) => x === id ? n + 1 : n, 0)
+      //    的人裡優先避免重複搭檔、其次避免重複對手、最後平衡兩隊總勝率。
       const ranked = [...active].sort((a, b) => winRate(b) - winRate(a))
       const groups = []
       for (let i = 0; i < ranked.length; i += grpSz) groups.push(ranked.slice(i, i + grpSz))
@@ -1409,7 +1440,7 @@
       // 指定優先旗標只生效一次，配對完即清除
       active.forEach(p => { p.pinned = false })
 
-      preview = newPreview; renderAll(); toast(`🎯 已產生 ${newPreview.length} 場預覽，確認後釋出`)
+      preview = newPreview; renderAll(); toast(`🎯 已產生 ${newPreview.length} 場預覽，確認後釋出${restNote}`)
     }
 
     // ═══════════════════════════════════════════════════════
@@ -1417,6 +1448,17 @@
     // ═══════════════════════════════════════════════════════
     function doRelease() {
       if (!preview.length) { toast('請先打亂預覽'); return }
+
+      // 更新「連續上場次數」與「連續休息次數」——依這次配對當下的等候名單，
+      // 跟實際被排進預覽的人比對：有上場的累加連續上場、連續休息歸零；
+      // 沒被排入的累加連續休息、連續上場歸零，供下一輪判斷用
+      const onCourtIdsBefore = new Set(courts.flatMap(c => [...c.teamA, ...c.teamB].map(p => p.id)))
+      const previewIds = new Set(preview.flatMap(m => [...m.teamA, ...m.teamB].map(p => p.id)))
+      players.filter(p => !onCourtIdsBefore.has(p.id) && !p.excluded).forEach(p => {
+        if (previewIds.has(p.id)) { p.consecutivePlay = (p.consecutivePlay || 0) + 1; p.consecutiveRest = 0 }
+        else { p.consecutiveRest = (p.consecutiveRest || 0) + 1; p.consecutivePlay = 0 }
+      })
+
       preview.forEach(m => {
         courts.push({ id: uid(), courtNum: m.courtNum, teamA: m.teamA, teamB: m.teamB, startTime: now() })
           // Increment match count
