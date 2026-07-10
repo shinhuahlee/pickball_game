@@ -1376,26 +1376,27 @@
       if (active.length < grpSz) { toast(`無法組成完整對戰（等待人數需為 ${grpSz} 的倍數）`); return }
 
       // ── 實力分組：上面已經公平選出「這一輪誰能上場」，這一步只決定
-      //    這群人怎麼互相配對——盡量讓實力相近的人對打，同時要避開最近配過
-      //    的隊友／打過的對手。用「代價」而非硬性分區，避免同一批人被鎖死、
-      //    隊友對手一直重複。
+      //    這群人怎麼互相配對。優先順序：先求實力相近，重複度（隊友/對手
+      //    配過幾次）只在實力打平或很接近時，才拿來決定挑誰──不會為了避開
+      //    重複而犧牲實力相近。
       // 實力用「累計勝率」判斷（沒打過的人視為中間值0.5），而不是只看上一場
       // 輸贏——上一場結果雜訊很大（單場運氣就能左右分類），累計勝率是連續數值，
       // 用完整歷史紀錄判斷，能配到「分數最接近」的人，而不是粗略分兩三群。
       const winRate = p => p.matchCount > 0 ? p.wins / p.matchCount : 0.5
       const countId = (arr, id) => arr.reduce((n, x) => x === id ? n + 1 : n, 0)
-      // 用「配過幾次」而非「配過沒」計費：配越多次代價越高，讓演算法優先
-      // 打散重複次數最多的組合，而不是配過一次之後就跟沒配過一樣沒差別
+      // 實力差距權重遠高於重複度：勝率差1%就等於1分代價，隊友重複一次只算2分、
+      // 對手重複一次只算1分——除非重複次數已經很誇張，否則實力相近永遠優先
+      const SKILL_WEIGHT = 15
       const pairCost = (a, b) => {
-        const skillDist = Math.abs(winRate(a) - winRate(b)) * 4 // 0~4，跟舊版 zoneDist*2 量級相近
+        const skillDist = Math.abs(winRate(a) - winRate(b)) * SKILL_WEIGHT
         const tmCount = countId(a.teammates, b.id)
         const opCount = countId(a.opponents, b.id)
-        return skillDist + tmCount * 6 + opCount * 3
+        return skillDist + tmCount * 2 + opCount
       }
       const skillCostOfGroup = four => {
         let s = 0
         for (let i = 0; i < four.length; i++) for (let j = i + 1; j < four.length; j++)
-          s += Math.abs(winRate(four[i]) - winRate(four[j])) * 4
+          s += Math.abs(winRate(four[i]) - winRate(four[j])) * SKILL_WEIGHT
         return s
       }
       const combos = (arr, k) => {
@@ -1430,7 +1431,7 @@
           let best = null, bestCost = Infinity
           for (const combo of combos(shortlist, size - 1)) {
             const four = [anchor, ...combo]
-            const cost = bestSplit(four).score * 3 + skillCostOfGroup(four)
+            const cost = skillCostOfGroup(four) + bestSplit(four).score
             if (cost < bestCost) { bestCost = cost; best = combo }
           }
           if (!best) best = shortlist.slice(0, size - 1)
