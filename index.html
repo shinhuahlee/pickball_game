@@ -1376,71 +1376,17 @@
       if (active.length < grpSz) { toast(`無法組成完整對戰（等待人數需為 ${grpSz} 的倍數）`); return }
 
       // ── 實力分組：上面已經公平選出「這一輪誰能上場」，這一步只決定
-      //    這群人怎麼互相配對。優先順序：先求實力相近，重複度（隊友/對手
-      //    配過幾次）只在實力打平或很接近時，才拿來決定挑誰──不會為了避開
-      //    重複而犧牲實力相近。
-      // 實力用「累計勝率」判斷（沒打過的人視為中間值0.5），而不是只看上一場
-      // 輸贏——上一場結果雜訊很大（單場運氣就能左右分類），累計勝率是連續數值，
-      // 用完整歷史紀錄判斷，能配到「分數最接近」的人，而不是粗略分兩三群。
+      //    這群人怎麼互相配對。直接依「累計勝率」由高到低排序，然後照名次
+      //    切成一組一組（前面幾名一組、接下來幾名一組……），確保同一組內
+      //    的人實力最接近。組內的隊友/對手搭配再交給 bestSplit，在這組固定
+      //    的人裡挑重複度最低的隊型（隊友優先不同，其次對手也不同）。
+      // 勝率沒打過的人視為中間值0.5，而不是只看上一場輸贏——上一場結果
+      // 雜訊很大（單場運氣就能左右分類），累計勝率用完整歷史紀錄判斷。
       const winRate = p => p.matchCount > 0 ? p.wins / p.matchCount : 0.5
       const countId = (arr, id) => arr.reduce((n, x) => x === id ? n + 1 : n, 0)
-      // 實力差距權重遠高於重複度：勝率差1%就等於1分代價，隊友重複一次只算2分、
-      // 對手重複一次只算1分——除非重複次數已經很誇張，否則實力相近永遠優先
-      const SKILL_WEIGHT = 15
-      const pairCost = (a, b) => {
-        const skillDist = Math.abs(winRate(a) - winRate(b)) * SKILL_WEIGHT
-        const tmCount = countId(a.teammates, b.id)
-        const opCount = countId(a.opponents, b.id)
-        return skillDist + tmCount * 2 + opCount
-      }
-      const skillCostOfGroup = four => {
-        let s = 0
-        for (let i = 0; i < four.length; i++) for (let j = i + 1; j < four.length; j++)
-          s += Math.abs(winRate(four[i]) - winRate(four[j])) * SKILL_WEIGHT
-        return s
-      }
-      const combos = (arr, k) => {
-        const result = []
-        const rec = (start, chosen) => {
-          if (chosen.length === k) { result.push(chosen.slice()); return }
-          for (let i = start; i < arr.length; i++) { chosen.push(arr[i]); rec(i + 1, chosen); chosen.pop() }
-        }
-        rec(0, [])
-        return result
-      }
-      // 每次先挑一個錨點，只從「跟錨點代價最低的候選人」裡挑一小組（避免全排列爆炸），
-      // 再實際套用 bestSplit 算出這幾種組合裡最佳隊型的重複度，選代價最低的一組——
-      // 比單純「錨點各自配最低代價的人」更準，因為也考慮了隊友之間彼此的重複史
-      function greedyGroup(pool, size) {
-        const remaining = [...pool]
-        const groups = []
-        const SHORTLIST = 8
-        while (remaining.length >= size) {
-          const anchor = remaining.shift()
-          if (size === 2) {
-            const best = remaining.map(c => ({ c, cost: pairCost(anchor, c) })).sort((x, y) => x.cost - y.cost)[0]
-            remaining.splice(remaining.indexOf(best.c), 1)
-            groups.push([anchor, best.c])
-            continue
-          }
-          const shortlist = remaining
-            .map(c => ({ c, cost: pairCost(anchor, c) }))
-            .sort((x, y) => x.cost - y.cost)
-            .slice(0, SHORTLIST)
-            .map(s => s.c)
-          let best = null, bestCost = Infinity
-          for (const combo of combos(shortlist, size - 1)) {
-            const four = [anchor, ...combo]
-            const cost = skillCostOfGroup(four) + bestSplit(four).score
-            if (cost < bestCost) { bestCost = cost; best = combo }
-          }
-          if (!best) best = shortlist.slice(0, size - 1)
-          best.forEach(p => remaining.splice(remaining.indexOf(p), 1))
-          groups.push([anchor, ...best])
-        }
-        return groups
-      }
-      const groups = greedyGroup(active, grpSz)
+      const ranked = [...active].sort((a, b) => winRate(b) - winRate(a))
+      const groups = []
+      for (let i = 0; i < ranked.length; i += grpSz) groups.push(ranked.slice(i, i + grpSz))
 
       // ── Assign groups to courts (up to slots) ───────────
       const newPreview = []
