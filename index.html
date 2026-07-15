@@ -1388,12 +1388,7 @@
       const eligiblePool = lowPopulation
         ? waiting.filter(p => !p.pinned && (p.consecutivePlay || 0) < 2)
         : waiting.filter(p => !p.pinned && (p.consecutivePlay || 0) === 0)
-
-      const usablePool = [...pinnedPool, ...eligiblePool]
-      const playCapacity = Math.min(maxCapacity, Math.floor(usablePool.length / grpSz) * grpSz)
-
-      if (playCapacity < grpSz) { toast('目前沒有足夠可輪替上場的人，請稍候下一輪'); return }
-      const restNote = playCapacity < maxCapacity ? '（依輪休制度限制，這輪少開一場）' : ''
+      const restrictedPool = waiting.filter(p => !p.pinned && !eligiblePool.includes(p))
 
       // 排序：（高人數模式下）已連續休息2輪、再不排就會違反「不得連續休三輪」
       //   的人最優先；其餘依「總上場次數」少者優先，次數相同時「已休息越久」
@@ -1408,7 +1403,25 @@
         return (b.consecutiveRest || 0) - (a.consecutiveRest || 0)
       })
 
-      const active = [...pinnedPool, ...sortByFairness(eligiblePool)].slice(0, playCapacity)
+      let candidates = [...pinnedPool, ...sortByFairness(eligiblePool)]
+      let playCapacity = Math.min(maxCapacity, Math.floor(candidates.length / grpSz) * grpSz)
+      let brokeRestRule = false
+
+      // 嚴格遵守輪休規則若導致這輪連一場都開不成（有人在候補，場地卻完全沒人可上），
+      // 寧可破例也不要讓場地閒置——讓連續上場次數最接近規則上限的人優先回來遞補，
+      // 但只補到「至少能開一場」為止，不會因此整批解禁
+      if (playCapacity < grpSz && restrictedPool.length > 0) {
+        const extra = rnd(restrictedPool).sort((a, b) => (a.consecutivePlay || 0) - (b.consecutivePlay || 0))
+        candidates = [...candidates, ...extra]
+        playCapacity = Math.min(maxCapacity, Math.floor(candidates.length / grpSz) * grpSz)
+        brokeRestRule = true
+      }
+
+      if (playCapacity < grpSz) { toast(`可上場人數不足（需至少 ${grpSz} 人）`); return }
+      const restNote = brokeRestRule ? '（可輪替人數不足，已暫時放寬連續上場限制）'
+        : playCapacity < maxCapacity ? '（依輪休制度限制，這輪少開一場）' : ''
+
+      const active = candidates.slice(0, playCapacity)
 
       // ── 實力分組：上面已經公平選出「這一輪誰能上場」，這一步只決定
       //    這群人怎麼互相配對。直接依「累計勝率」由高到低排序，然後照名次
