@@ -660,10 +660,10 @@
 
     .lb-hd {
       display: grid;
-      grid-template-columns: 24px 1fr 36px 36px 46px 46px;
+      grid-template-columns: 20px minmax(0, 1fr) 24px 24px 30px 34px 32px;
       gap: 3px;
       padding: 4px 8px;
-      font-size: .67rem;
+      font-size: .62rem;
       font-weight: 700;
       color: var(--muted);
       border-bottom: 1px solid var(--border);
@@ -671,7 +671,7 @@
 
     .lb-row {
       display: grid;
-      grid-template-columns: 24px 1fr 36px 36px 46px 46px;
+      grid-template-columns: 20px minmax(0, 1fr) 24px 24px 30px 34px 32px;
       gap: 3px;
       align-items: center;
       padding: 7px 8px;
@@ -682,12 +682,6 @@
 
     .lb-row:active {
       background: #f3fbf4
-    }
-
-    /* 手機隱藏「場數」欄（第5欄） */
-    .lb-hd>*:nth-child(5),
-    .lb-row>*:nth-child(5) {
-      display: none
     }
 
     .lbr {
@@ -717,6 +711,13 @@
       display: flex;
       align-items: center;
       gap: 4px;
+      min-width: 0
+    }
+
+    .lbn .lbn-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
       min-width: 0
     }
 
@@ -914,15 +915,9 @@
         grid-template-columns: repeat(auto-fill, minmax(240px, 1fr))
       }
 
-      /* 排行榜恢復 6 欄並顯示場數 */
       .lb-hd,
       .lb-row {
         grid-template-columns: 30px 1fr 50px 50px 52px 56px 56px
-      }
-
-      .lb-hd>*:nth-child(5),
-      .lb-row>*:nth-child(5) {
-        display: block
       }
 
       .hist-list {
@@ -967,11 +962,6 @@
       .lb-hd,
       .lb-row {
         grid-template-columns: 30px 1fr 50px 50px 52px 56px 56px
-      }
-
-      .lb-hd>*:nth-child(5),
-      .lb-row>*:nth-child(5) {
-        display: block
       }
     }
 
@@ -1751,7 +1741,7 @@
         const oc = onCourtIds.has(p.id)
         return `<div class="lb-row">
       <span class="${rcls(i)}">${sym(i)}</span>
-      <span class="lbn">${p.name}${oc ? '<span class="oc">上場中</span>' : ''}</span>
+      <span class="lbn"><span class="lbn-name">${p.name}</span>${oc ? '<span class="oc">上場中</span>' : ''}</span>
       <span class="lbw">${p.wins}</span>
       <span class="lbl">${p.losses}</span>
       <span class="lbt">${p.matchCount}</span>
