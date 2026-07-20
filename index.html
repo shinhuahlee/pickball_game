@@ -504,6 +504,22 @@
       white-space: nowrap
     }
 
+    .prev-del {
+      background: none;
+      border: none;
+      color: #c89020;
+      font-size: .9rem;
+      padding: 2px 4px;
+      line-height: 1;
+      margin-left: auto;
+      min-width: 26px;
+      min-height: 26px
+    }
+
+    .prev-del:active {
+      color: var(--red)
+    }
+
     .prev-left {
       font-size: .77rem;
       color: var(--muted);
@@ -1320,6 +1336,15 @@
     const winRate = p => p.matchCount > 0 ? p.wins / p.matchCount : 0.5
     const countId = (arr, id) => arr.reduce((n, x) => x === id ? n + 1 : n, 0)
 
+    // 這組人（不分隊型，只看是不是同一批人）在歷史紀錄中一起打過幾次
+    function groupRepeatCount(grp) {
+      const ids = new Set(grp.map(p => p.id))
+      return history.filter(h => {
+        const hids = new Set([...h.teamA, ...h.teamB].map(p => p.id))
+        return hids.size === ids.size && [...ids].every(id => hids.has(id))
+      }).length
+    }
+
     // 評估一種分法：teamA=[a,b] vs teamB=[c,d]
     function splitOption(a, b, c, d) {
       const tmCost = countId(a.teammates, b.id) + countId(c.teammates, d.id)
@@ -1471,6 +1496,32 @@
       const ranked = [...active].sort((a, b) => winRate(b) - winRate(a))
       const groups = []
       for (let i = 0; i < ranked.length; i += grpSz) groups.push(ranked.slice(i, i + grpSz))
+
+      // 安全閥：同一批人（不分隊型）最近已經配過 ≥2 次，就跳過嚴格名次分組，
+      // 改跟名次相鄰的組交換一位成員，找重複度更低的組合——避免實力太接近、
+      // 名次久久不變時，同一群人被鎖死一直對打
+      for (let gi = 0; gi < groups.length; gi++) {
+        if (groupRepeatCount(groups[gi]) < 2) continue
+        const neighbors = [gi - 1, gi + 1].filter(ni => ni >= 0 && ni < groups.length)
+        let bestSwap = null
+        for (const ni of neighbors) {
+          const originalCombined = groupRepeatCount(groups[gi]) + groupRepeatCount(groups[ni])
+          for (let a = 0; a < groups[gi].length; a++) {
+            for (let b = 0; b < groups[ni].length; b++) {
+              const g1 = groups[gi].slice(), g2 = groups[ni].slice()
+              ;[g1[a], g2[b]] = [g2[b], g1[a]]
+              const combined = groupRepeatCount(g1) + groupRepeatCount(g2)
+              if (combined < originalCombined && (!bestSwap || combined < bestSwap.combined)) {
+                bestSwap = { ni, g1, g2, combined }
+              }
+            }
+          }
+        }
+        if (bestSwap) {
+          groups[gi] = bestSwap.g1
+          groups[bestSwap.ni] = bestSwap.g2
+        }
+      }
 
       for (const grp of groups) {
         let match
@@ -1632,8 +1683,16 @@
       <span class="prev-vs">VS</span>
       <div class="prev-team">${m.teamB.map(p => `<span class="prev-nm">${p.name}</span>`).join('')}</div>
       <span class="prev-score" title="重複度：重複隊友(×2)+重複對手，越低越好">重複度 ${m.score}</span>
+      <button class="prev-del" onclick="removePreviewMatch(${m.courtNum})" title="移除這場預覽（不影響統計）">✕</button>
     </div>`).join('') +
         (leftover.length ? `<div class="prev-left">等待下一輪：${leftover.map(p => p.name + (p.excluded ? '（暫停）' : '')).join('、')}</div>` : '')
+    }
+
+    // 移除單場預覽配對——尚未釋出上場，完全不影響上場次數/隊友對手紀錄/積分
+    function removePreviewMatch(courtNum) {
+      preview = preview.filter(m => m.courtNum !== courtNum)
+      renderAll()
+      toast('已移除該場預覽')
     }
 
     function renderCourts() {
