@@ -1133,7 +1133,7 @@
     //  hist:   { ...court, endTime, winner:'A'|'B'|null }
     //  preview:[ { courtNum, teamA:[p,p], teamB:[p,p], score } ]
     // ═══════════════════════════════════════════════════════
-    let players = [], courts = [], history = [], preview = [], nextId = 1
+    let players = [], courts = [], history = [], preview = [], nextId = 1, pinSeq = 0
     let sessionId = '', sessionStart = ''
     let gameMode = 'doubles' // 'doubles' | 'singles'
 
@@ -1189,11 +1189,13 @@
         const s = JSON.parse(raw, dateReviver)
         players = s.players || []
         players.forEach(p => {
-          if (p.pinned === undefined) p.pinned = false
+          if (p.pinOrder === undefined) p.pinOrder = null
+          delete p.pinned // 舊版布林旗標改用 pinOrder（null=未指定，數字=指定順序），無法還原順序故直接清除
           if (p.excluded === undefined) p.excluded = false
           if (p.consecutivePlay === undefined) p.consecutivePlay = 0
           if (p.consecutiveRest === undefined) p.consecutiveRest = 0
         })
+        pinSeq = players.reduce((mx, p) => Math.max(mx, p.pinOrder || 0), 0)
         courts = s.courts || []
         history = s.history || []
         nextId = s.nextId || 1
@@ -1245,7 +1247,7 @@
         players.push({
           id: uid(), name, joinTime: now(), zone: 'new',
           matchCount: 0, wins: 0, losses: 0, teammates: [], opponents: [],
-          pinned: false, excluded: false, consecutivePlay: 0, consecutiveRest: 0
+          pinOrder: null, excluded: false, consecutivePlay: 0, consecutiveRest: 0
         })
         added++
       })
@@ -1278,7 +1280,7 @@
           let added = 0, dups = 0
           names.forEach(name => {
             if (players.find(p => p.name === name)) { dups++; return }
-            players.push({ id: uid(), name, joinTime: now(), zone: 'new', matchCount: 0, wins: 0, losses: 0, teammates: [], opponents: [], pinned: false, excluded: false, consecutivePlay: 0, consecutiveRest: 0 })
+            players.push({ id: uid(), name, joinTime: now(), zone: 'new', matchCount: 0, wins: 0, losses: 0, teammates: [], opponents: [], pinOrder: null, excluded: false, consecutivePlay: 0, consecutiveRest: 0 })
             added++
           })
           preview = []; renderAll()
@@ -1343,18 +1345,26 @@
       return rnd(top)[0]
     }
 
+    // 指定上場：依「點擊順序」記錄，順序決定隊友/對手怎麼分——例如依序點
+    // 1,2,3,4，配對時就是隊友1+2 對打隊友3+4。指定者無條件上場，不受
+    // 任何輪休規則限制。
     function togglePin(id) {
       const p = players.find(p => p.id === id); if (!p) return
-      p.pinned = !p.pinned
-      if (p.pinned) p.excluded = false
+      if (p.pinOrder != null) {
+        p.pinOrder = null
+        toast(`已取消指定 ${p.name}`)
+      } else {
+        p.pinOrder = ++pinSeq
+        p.excluded = false
+        toast(`📌 ${p.name} 指定上場（第 ${players.filter(x => x.pinOrder != null).length} 位）`)
+      }
       renderAll()
-      toast(p.pinned ? `📌 ${p.name} 指定優先上場` : `已取消指定 ${p.name}`)
     }
 
     function toggleExclude(id) {
       const p = players.find(p => p.id === id); if (!p) return
       p.excluded = !p.excluded
-      if (p.excluded) p.pinned = false
+      if (p.excluded) p.pinOrder = null
       else { p.consecutivePlay = 0; p.consecutiveRest = 0 } // 暫停期間視同休息，恢復時重新起算連續場次
       renderAll()
       toast(p.excluded ? `⏸ ${p.name} 暫停上場` : `▶ ${p.name} 恢復上場`)
@@ -1370,8 +1380,37 @@
       if (slots <= 0) { toast('場地已滿'); return }
       if (waiting.length < grpSz) { toast(`可上場人數不足（需至少 ${grpSz} 人，暫停者不計入）`); return }
 
-      const maxCapacity = Math.min(slots * grpSz, Math.floor(waiting.length / grpSz) * grpSz)
-      if (maxCapacity < grpSz) { toast(`無法組成完整對戰（等待人數需為 ${grpSz} 的倍數）`); return }
+      const newPreview = []
+      const usedNums = new Set(courts.map(c => c.courtNum))
+      const nextNum = () => { let n = 1; while (usedNums.has(n)) n++; usedNums.add(n); return n }
+
+      // ── 指定上場（依點擊順序）：湊滿一整組（雙打4人/單打2人）的，直接依
+      //    點擊順序拆隊——前半 vs 後半（例：依序點1,2,3,4＝隊友1+2 對打
+      //    隊友3+4），不經過強弱分組或 bestSplit 重新配對。指定者無條件
+      //    上場，不受任何輪休規則限制；只受場地數量限制。
+      const pinnedOrdered = waiting.filter(p => p.pinOrder != null).sort((a, b) => a.pinOrder - b.pinOrder)
+      const usedPinnedIds = new Set()
+      let slotsLeft = slots
+      for (let i = 0; i + grpSz <= pinnedOrdered.length && slotsLeft > 0; i += grpSz) {
+        const grp = pinnedOrdered.slice(i, i + grpSz)
+        const half = grpSz / 2
+        const teamA = grp.slice(0, half), teamB = grp.slice(half)
+        const score = gameMode === 'singles'
+          ? countId(teamA[0].opponents, teamB[0].id)
+          : splitOption(teamA[0], teamA[1], teamB[0], teamB[1]).score
+        newPreview.push({ courtNum: nextNum(), teamA, teamB, score })
+        grp.forEach(p => { usedPinnedIds.add(p.id); p.pinOrder = null }) // 指定上場只生效一次，組成後立即清除
+        slotsLeft--
+      }
+      // 湊不成整組的指定剩餘者，優先權留到下面一起處理（依然無條件上場）
+      const pinnedLeftover = pinnedOrdered.filter(p => !usedPinnedIds.has(p.id))
+      const remainingWaiting = waiting.filter(p => !usedPinnedIds.has(p.id))
+
+      const maxCapacity = Math.min(slotsLeft * grpSz, Math.floor(remainingWaiting.length / grpSz) * grpSz)
+      if (maxCapacity < grpSz) {
+        if (newPreview.length) { preview = newPreview; renderAll(); toast(`🎯 已產生 ${newPreview.length} 場預覽（指定上場），確認後釋出`); return }
+        toast(`無法組成完整對戰（等待人數需為 ${grpSz} 的倍數）`); return
+      }
 
       // ── 依「總人數 vs. 場地總容納量」決定這輪的輪休規則：
       //    人數 < 容納量兩倍：人不夠讓大家每輪都休息，允許連續上場，
@@ -1379,16 +1418,14 @@
       //    人數 ≥ 容納量兩倍：人手充足，上一輪有上場的這輪原則上全部
       //      休息（嚴格輪替），同時也不得連續休息三輪，優先讓休最久、
       //      場次最少的人（含新加入者）優先補上。
-      //    指定優先者不受這些限制，人工指定永遠可上場。
       const totalCapacity = maxCourts * grpSz
       const totalPeople = players.filter(p => !p.excluded).length
       const lowPopulation = totalPeople < totalCapacity * 2
 
-      const pinnedPool = waiting.filter(p => p.pinned)
       const eligiblePool = lowPopulation
-        ? waiting.filter(p => !p.pinned && (p.consecutivePlay || 0) < 2)
-        : waiting.filter(p => !p.pinned && (p.consecutivePlay || 0) === 0)
-      const restrictedPool = waiting.filter(p => !p.pinned && !eligiblePool.includes(p))
+        ? remainingWaiting.filter(p => p.pinOrder == null && (p.consecutivePlay || 0) < 2)
+        : remainingWaiting.filter(p => p.pinOrder == null && (p.consecutivePlay || 0) === 0)
+      const restrictedPool = remainingWaiting.filter(p => p.pinOrder == null && !eligiblePool.includes(p))
 
       // 排序：（高人數模式下）已連續休息2輪、再不排就會違反「不得連續休三輪」
       //   的人最優先；其餘依「總上場次數」少者優先，次數相同時「已休息越久」
@@ -1403,7 +1440,7 @@
         return (b.consecutiveRest || 0) - (a.consecutiveRest || 0)
       })
 
-      let candidates = [...pinnedPool, ...sortByFairness(eligiblePool)]
+      let candidates = [...pinnedLeftover, ...sortByFairness(eligiblePool)]
       let playCapacity = Math.min(maxCapacity, Math.floor(candidates.length / grpSz) * grpSz)
       let brokeRestRule = false
 
@@ -1417,7 +1454,10 @@
         brokeRestRule = true
       }
 
-      if (playCapacity < grpSz) { toast(`可上場人數不足（需至少 ${grpSz} 人）`); return }
+      if (playCapacity < grpSz) {
+        if (newPreview.length) { preview = newPreview; renderAll(); toast(`🎯 已產生 ${newPreview.length} 場預覽（指定上場），確認後釋出`); return }
+        toast(`可上場人數不足（需至少 ${grpSz} 人）`); return
+      }
       const restNote = brokeRestRule ? '（可輪替人數不足，已暫時放寬連續上場限制）'
         : playCapacity < maxCapacity ? '（依輪休制度限制，這輪少開一場）' : ''
 
@@ -1432,11 +1472,6 @@
       const groups = []
       for (let i = 0; i < ranked.length; i += grpSz) groups.push(ranked.slice(i, i + grpSz))
 
-      // ── Assign groups to courts (up to slots) ───────────
-      const newPreview = []
-      const usedNums = new Set(courts.map(c => c.courtNum))
-      const nextNum = () => { let n = 1; while (usedNums.has(n)) n++; usedNums.add(n); return n }
-
       for (const grp of groups) {
         let match
         if (gameMode === 'singles') {
@@ -1450,8 +1485,8 @@
         newPreview.push(match)
       }
 
-      // 指定優先旗標只生效一次，配對完即清除
-      active.forEach(p => { p.pinned = false })
+      // 剩餘湊不成整組的指定者，這輪也已上場，清除指定旗標
+      pinnedLeftover.forEach(p => { p.pinOrder = null })
 
       preview = newPreview; renderAll(); toast(`🎯 已產生 ${newPreview.length} 場預覽，確認後釋出${restNote}`)
     }
@@ -1556,16 +1591,20 @@
       if (!players.length) { el.innerHTML = '<span style="color:var(--muted);font-size:.82rem">尚無人報名</span>'; return }
       const zoneBg = { new: 'var(--green)', win: 'var(--green)', lose: 'var(--red)' }
       const zoneLabel = { new: '新', win: '贏', lose: '輸' }
+      // 指定順序：顯示「第幾個點的」而不是內部的 pinOrder 原始值
+      const pinRank = new Map(
+        players.filter(p => p.pinOrder != null).sort((a, b) => a.pinOrder - b.pinOrder).map((p, idx) => [p.id, idx + 1])
+      )
       el.innerHTML = players.map((p, i) => {
         const oc = onCourtIds.has(p.id), ip = previewIds.has(p.id)
         const isWaiting = !oc && !ip
         const cls = oc ? 'chip chip-court' : ip ? 'chip chip-preview' : (p.excluded ? 'chip chip-wait chip-excluded' : 'chip chip-wait')
         const rk_bg = oc ? '#7a8f9a' : ip ? '#c89020' : zoneBg[p.zone]
         let tag = oc ? `<span class="chip-tag tag-court">上場中</span>` : ip ? `<span class="chip-tag tag-prev">預覽中</span>` : ''
-        if (isWaiting && p.pinned) tag += `<span class="chip-tag tag-pin">📌指定</span>`
+        if (isWaiting && p.pinOrder != null) tag += `<span class="chip-tag tag-pin">📌第${pinRank.get(p.id)}位</span>`
         if (isWaiting && p.excluded) tag += `<span class="chip-tag tag-pause">暫停</span>`
         const actionBtns = isWaiting
-          ? `<button class="chip-pin${p.pinned ? ' active' : ''}" onclick="togglePin(${p.id})" title="指定優先上場">📌</button>
+          ? `<button class="chip-pin${p.pinOrder != null ? ' active' : ''}" onclick="togglePin(${p.id})" title="依序點選＝指定隊友/對手順序">📌${p.pinOrder != null ? pinRank.get(p.id) : ''}</button>
              <button class="chip-pause${p.excluded ? ' active' : ''}" onclick="toggleExclude(${p.id})" title="${p.excluded ? '恢復上場' : '暫停上場'}">${p.excluded ? '▶' : '⏸'}</button>
              <button class="chip-del" onclick="removePlayer(${p.id})">✕</button>`
           : ''
