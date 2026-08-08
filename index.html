@@ -1719,15 +1719,23 @@
   </div>`).join('')
     }
 
-    // Wilson score 信賴區間下界（95% 信心水準）：把「勝率」換算成「這個勝率有多可信」，
-    // 場次越少、樣本越不足，下界越會被往 50% 拉——避免打1場全勝的人排在打20場18勝的人前面
+    // Wilson score 信賴區間下界（99% 信心水準）：把「勝率」換算成「這個勝率有多可信」，
+    // 場次越少、樣本越不足，下界越會被往 50% 拉——避免打1場全勝的人排在打20場18勝的人前面。
+    // 用99%（z=2.58）比原本95%更保守，場次不夠多的人分數會被壓得更低。
     function wilsonScore(wins, n) {
       if (n === 0) return 0
-      const z = 1.96, phat = wins / n, z2 = z * z
+      const z = 2.58, phat = wins / n, z2 = z * z
       return (phat + z2 / (2 * n) - z * Math.sqrt((phat * (1 - phat) + z2 / (4 * n)) / n)) / (1 + z2 / n)
     }
 
-    // 依積分排序後，場次過少者（低於全場最高場次×0.45）不得排進前三名——
+    // 最終積分：Wilson score 再乘上「場次權重」（自己場次 ÷ 全場最高場次，最高封頂1）——
+    // 場次越接近打最多的人，才能拿到完整分數；場次差越多，分數被打折越多
+    function finalScore(p, maxMatchCount) {
+      const weight = maxMatchCount > 0 ? Math.min(1, p.matchCount / maxMatchCount) : 1
+      return wilsonScore(p.wins, p.matchCount) * weight
+    }
+
+    // 依積分排序後，場次過少者（低於全場最高場次×0.7）不得排進前三名——
     // 從積分排序中先挑出「場次足夠」的前三名固定佔住1~3名，其餘的人
     // （含被擠出前三的場次足夠者、以及所有場次過少者）合併後仍依積分排序，
     // 接續排在第4名之後
@@ -1743,15 +1751,16 @@
       const el = document.getElementById('leaderboard')
       const onCourtIds = new Set(courts.flatMap(c => [...c.teamA, ...c.teamB].map(p => p.id)))
       const withMatches = players.filter(p => p.matchCount > 0)
+      if (!withMatches.length) { el.innerHTML = '<div class="empty">尚無積分紀錄</div>'; return }
+      const maxMatchCount = Math.max(...withMatches.map(p => p.matchCount))
       const scoreSorted = [...withMatches]
         .sort((a, b) => {
-          const wa = wilsonScore(a.wins, a.matchCount), wb = wilsonScore(b.wins, b.matchCount)
+          const wa = finalScore(a, maxMatchCount), wb = finalScore(b, maxMatchCount)
           return wb - wa || (b.wins / b.matchCount) - (a.wins / a.matchCount) || b.matchCount - a.matchCount
         })
-      if (!scoreSorted.length) { el.innerHTML = '<div class="empty">尚無積分紀錄</div>'; return }
-      // 場次基準：場上打最多場次的人的總場次 × 0.45，低於這個門檻的人
+      // 場次基準：場上打最多場次的人的總場次 × 0.7，低於這個門檻的人
       // 積分旁會加註提示，且不得排進前三名
-      const lowSampleThreshold = Math.max(...scoreSorted.map(p => p.matchCount)) * 0.45
+      const lowSampleThreshold = maxMatchCount * 0.7
       const ranked = applyTop3Guard(scoreSorted, lowSampleThreshold)
       const sym = i => i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1)
       const rcls = i => i === 0 ? 'lbr g1' : i === 1 ? 'lbr g2' : i === 2 ? 'lbr g3' : 'lbr'
@@ -1762,10 +1771,10 @@
     <span style="text-align:center">敗</span>
     <span style="text-align:center">場數</span>
     <span style="text-align:center">勝率</span>
-    <span style="text-align:center" title="Wilson score 信賴區間下界：綜合勝率與場次多寡的排名依據">積分</span>
+    <span style="text-align:center" title="Wilson score（99%信心水準）× 場次權重：綜合勝率與場次多寡的排名依據">積分</span>
   </div>`+ ranked.map((p, i) => {
         const rate = p.matchCount > 0 ? Math.round(p.wins / p.matchCount * 100) : 0
-        const score = Math.round(wilsonScore(p.wins, p.matchCount) * 100)
+        const score = Math.round(finalScore(p, maxMatchCount) * 100)
         const barColor = rate >= 50 ? 'var(--green)' : 'var(--red)'
         const oc = onCourtIds.has(p.id)
         const lowSample = p.matchCount < lowSampleThreshold
@@ -1779,7 +1788,7 @@
       <span class="lbscore">${score}</span>
     </div>`
       }).join('') +
-        (ranked.some(p => p.matchCount < lowSampleThreshold) ? `<div class="lb-note">⚠️ 場次過少僅參考（低於全場最高場次的45%，不列入前三名）</div>` : '')
+        (ranked.some(p => p.matchCount < lowSampleThreshold) ? `<div class="lb-note">⚠️ 場次過少僅參考</div>` : '')
     }
 
     function renderHistory() {
@@ -1949,16 +1958,18 @@
       const rows = [['比賽代號', sessionId], ['開始時間', sessionStart], ['匯出時間', fmtF(now())], []]
       rows.push(['─── 積分排行榜 ───'])
       rows.push(['名次', '選手', '勝', '敗', '場數', '勝率', '積分', '備註'])
-      const csvScoreSorted = [...players].filter(p => p.matchCount > 0)
+      const csvWithMatches = players.filter(p => p.matchCount > 0)
+      const csvMaxMatchCount = csvWithMatches.length ? Math.max(...csvWithMatches.map(p => p.matchCount)) : 0
+      const csvScoreSorted = [...csvWithMatches]
         .sort((a, b) => {
-          const wa = wilsonScore(a.wins, a.matchCount), wb = wilsonScore(b.wins, b.matchCount)
+          const wa = finalScore(a, csvMaxMatchCount), wb = finalScore(b, csvMaxMatchCount)
           return wb - wa || (b.wins / b.matchCount) - (a.wins / a.matchCount) || b.matchCount - a.matchCount
         })
-      const lowSampleThreshold = csvScoreSorted.length ? Math.max(...csvScoreSorted.map(p => p.matchCount)) * 0.45 : 0
+      const lowSampleThreshold = csvMaxMatchCount * 0.7
       const ranked = applyTop3Guard(csvScoreSorted, lowSampleThreshold)
       ranked.forEach((p, i) => {
         const rate = p.matchCount ? Math.round(p.wins / p.matchCount * 100) : 0
-        const score = Math.round(wilsonScore(p.wins, p.matchCount) * 100)
+        const score = Math.round(finalScore(p, csvMaxMatchCount) * 100)
         rows.push([i + 1, p.name, p.wins, p.losses, p.matchCount, rate + '%', score, p.matchCount < lowSampleThreshold ? '場次過少僅參考' : ''])
       })
       rows.push([])
