@@ -730,6 +730,18 @@
       white-space: nowrap
     }
 
+    .lbn .low-sample {
+      font-size: .68rem;
+      flex-shrink: 0;
+      cursor: help
+    }
+
+    .lb-note {
+      font-size: .68rem;
+      color: var(--muted);
+      padding: 6px 8px 2px;
+    }
+
     .lbw {
       color: var(--green);
       font-weight: 700;
@@ -1707,12 +1719,16 @@
   </div>`).join('')
     }
 
-    // Wilson score 信賴區間下界（95% 信心水準）：把「勝率」換算成「這個勝率有多可信」，
-    // 場次越少、樣本越不足，下界越會被往 50% 拉——避免打1場全勝的人排在打20場18勝的人前面
-    function wilsonScore(wins, n) {
-      if (n === 0) return 0
-      const z = 1.96, phat = wins / n, z2 = z * z
-      return (phat + z2 / (2 * n) - z * Math.sqrt((phat * (1 - phat) + z2 / (4 * n)) / n)) / (1 + z2 / n)
+    // 貝氏平均：個人勝率跟全體「中性基準」50% 依場次數加權混合，場次越少，
+    // 分數越貼近50%；場次越多，越接近個人真實勝率。m=5 代表大約要打贏
+    // 過5場虛擬的「基準對局」，個人紀錄的份量才會超過基準值一半。
+    // 全體基準固定用 50%（不用動態計算目前所有人的平均），因為任何一場
+    // 都是一勝一敗，長期本來就會趨近50%，用固定值可避免平均值被少數
+    // 場次少的人拉動的循環問題。
+    const BAYES_M = 5
+    function bayesScore(wins, n) {
+      if (n === 0) return 0.5
+      return (n / (n + BAYES_M)) * (wins / n) + (BAYES_M / (n + BAYES_M)) * 0.5
     }
 
     function renderLeaderboard() {
@@ -1720,10 +1736,13 @@
       const onCourtIds = new Set(courts.flatMap(c => [...c.teamA, ...c.teamB].map(p => p.id)))
       const ranked = [...players].filter(p => p.matchCount > 0)
         .sort((a, b) => {
-          const wa = wilsonScore(a.wins, a.matchCount), wb = wilsonScore(b.wins, b.matchCount)
+          const wa = bayesScore(a.wins, a.matchCount), wb = bayesScore(b.wins, b.matchCount)
           return wb - wa || (b.wins / b.matchCount) - (a.wins / a.matchCount) || b.matchCount - a.matchCount
         })
       if (!ranked.length) { el.innerHTML = '<div class="empty">尚無積分紀錄</div>'; return }
+      // 場次基準：場上打最多場次的人的總場次 × 0.45，低於這個門檻的人
+      // 積分旁會加註「場次過少，僅供參考」
+      const lowSampleThreshold = Math.max(...ranked.map(p => p.matchCount)) * 0.45
       const sym = i => i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1)
       const rcls = i => i === 0 ? 'lbr g1' : i === 1 ? 'lbr g2' : i === 2 ? 'lbr g3' : 'lbr'
       el.innerHTML = `<div class="lb-hd">
@@ -1733,22 +1752,24 @@
     <span style="text-align:center">敗</span>
     <span style="text-align:center">場數</span>
     <span style="text-align:center">勝率</span>
-    <span style="text-align:center" title="Wilson score 信賴區間下界：綜合勝率與場次多寡的排名依據">積分</span>
+    <span style="text-align:center" title="貝氏平均：個人勝率跟50%基準依場次加權混合，場次越少越貼近基準值">積分</span>
   </div>`+ ranked.map((p, i) => {
         const rate = p.matchCount > 0 ? Math.round(p.wins / p.matchCount * 100) : 0
-        const score = Math.round(wilsonScore(p.wins, p.matchCount) * 100)
+        const score = Math.round(bayesScore(p.wins, p.matchCount) * 100)
         const barColor = rate >= 50 ? 'var(--green)' : 'var(--red)'
         const oc = onCourtIds.has(p.id)
+        const lowSample = p.matchCount < lowSampleThreshold
         return `<div class="lb-row">
       <span class="${rcls(i)}">${sym(i)}</span>
-      <span class="lbn"><span class="lbn-name">${p.name}</span>${oc ? '<span class="oc">上場中</span>' : ''}</span>
+      <span class="lbn"><span class="lbn-name">${p.name}</span>${oc ? '<span class="oc">上場中</span>' : ''}${lowSample ? '<span class="low-sample" title="場次過少，僅供參考">⚠️</span>' : ''}</span>
       <span class="lbw">${p.wins}</span>
       <span class="lbl">${p.losses}</span>
       <span class="lbt">${p.matchCount}</span>
       <span class="lbwr" style="color:${barColor}">${rate}%</span>
       <span class="lbscore">${score}</span>
     </div>`
-      }).join('')
+      }).join('') +
+        (ranked.some(p => p.matchCount < lowSampleThreshold) ? `<div class="lb-note">⚠️ 場次過少，僅供參考（低於全場最高場次的45%）</div>` : '')
     }
 
     function renderHistory() {
@@ -1917,16 +1938,17 @@
     function buildCSVContent() {
       const rows = [['比賽代號', sessionId], ['開始時間', sessionStart], ['匯出時間', fmtF(now())], []]
       rows.push(['─── 積分排行榜 ───'])
-      rows.push(['名次', '選手', '勝', '敗', '場數', '勝率', '積分'])
+      rows.push(['名次', '選手', '勝', '敗', '場數', '勝率', '積分', '備註'])
       const ranked = [...players].filter(p => p.matchCount > 0)
         .sort((a, b) => {
-          const wa = wilsonScore(a.wins, a.matchCount), wb = wilsonScore(b.wins, b.matchCount)
+          const wa = bayesScore(a.wins, a.matchCount), wb = bayesScore(b.wins, b.matchCount)
           return wb - wa || (b.wins / b.matchCount) - (a.wins / a.matchCount) || b.matchCount - a.matchCount
         })
+      const lowSampleThreshold = Math.max(...ranked.map(p => p.matchCount)) * 0.45
       ranked.forEach((p, i) => {
         const rate = p.matchCount ? Math.round(p.wins / p.matchCount * 100) : 0
-        const score = Math.round(wilsonScore(p.wins, p.matchCount) * 100)
-        rows.push([i + 1, p.name, p.wins, p.losses, p.matchCount, rate + '%', score])
+        const score = Math.round(bayesScore(p.wins, p.matchCount) * 100)
+        rows.push([i + 1, p.name, p.wins, p.losses, p.matchCount, rate + '%', score, p.matchCount < lowSampleThreshold ? '場次過少，僅供參考' : ''])
       })
       rows.push([])
       rows.push(['─── 比賽歷史記錄 ───'])
